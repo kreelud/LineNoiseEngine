@@ -1,0 +1,1 @@
+These classes handle the graphical aspects of sprites in order to keep the game's internal logic separate.

@@ -1,0 +1,167 @@
+<html>
+	<head>
+		
+		<script src='field.js'></script>
+		<script src='playfieldgraphic.js'></script>
+		<script src='attack.js'></script>
+		<script src='attacks/walk.js'></script>
+		<script src='mob.js'></script>
+		<script src='mobsprite.js'></script>
+		<script src='mobs/testmob.js'></script>
+		<script src='mobsprites/testsprite.js'></script>
+		<script src='assets/test.json'></script>
+		<script src='assets/test.json'></script>
+		<script>
+			var imageCache = {};  //external assets
+			var spriteStack = {};//list of all active sprites, each containing x,y, function,onclick
+			var clickboxes = [];//a buffer of clickable sprites that's restored each time pulse is called
+
+			function ImageLoader (stack,callback) //loads external images, notifies when complete
+			{
+				this.callback = callback; //the function that will be called when all images are loaded
+				this.remaining = stack.length; //the number of images yet to be loaded
+				this.decr = function()
+				{
+					this.remaining--;
+					if (this.remaining <=0)this.callback();
+				};
+				for (var c1=0;c1<stack.length;c1++)
+				{
+					var pic = stack[c1];
+					
+					if (imageCache[pic.label]) //picture is already in cache
+					{
+						this.decr();
+						continue;
+					}
+					
+					imageCache[pic.label]=document.createElement('img');
+					imageCache[pic.label].onload = this.decr;
+					imageCache[pic.label].src = pic.src;
+					if (imageCache[pic.label].complete) this.decr();
+				}
+			}
+			function pulse ()
+			{
+				var sprites = Object.keys(spriteStack);
+				sprites.sort(function (a,b)
+				{
+					return spriteStack[a].z - spriteStack[b].z;
+				});//put sprites in z order
+				clickboxes=[]; //clear out buffer of click areas
+				var canvas = document.getElementById('gameScreen'); //fetch main canvas
+				var ctx = canvas.getContext('2d');
+				ctx.clearRect(0,0,canvas.width,canvas.height); //clear canvas for redrawing
+				
+				for (var c1=0;c1<sprites.length;c1++)
+				{
+					var sprite = spriteStack[sprites[c1]];
+					var picture = sprite.img();
+					//record the sprite's hitbox
+					if (sprite.hasOwnProperty('onclick') ||sprite.hasOwnProperty('onmousemove'))
+					{
+						var clickbox = 
+						{
+							'onclick':sprite.onclick,
+							'onmousemove':sprite.onmousemove,
+							'x':sprite.x,
+							'y':sprite.y,
+							'z': sprite.z,
+							'pp':sprite.pp,
+							'img':picture
+						};
+						clickboxes.unshift(clickbox);
+					}
+					//draw the sprite in the correct location
+					ctx.drawImage(picture,sprite.x,sprite.y);
+				}
+			}
+			function screenclick (evt)
+			{
+				//evt needs to be adjusted for canvas position
+				var rect = document.getElementById('gameScreen').getBoundingClientRect();
+				
+				evt.canvasX = evt.clientX - rect.left - window.scrollX;
+				evt.canvasY = evt.pageY - rect.top -window.scrollY;
+				for (var c1=0;c1<clickboxes.length;c1++)
+				{
+					//figure out which sprite was clicked
+					var sprite = clickboxes[c1];
+					if 
+	 				(
+						evt.canvasX >= sprite.x &&
+						evt.canvasY >= sprite.y &&
+						evt.canvasX < sprite.x+sprite.img.width &&
+						evt.canvasY < sprite.y+sprite.img.height
+					)
+					{
+						
+						if (sprite.pp)
+						{
+							//convert to canvas, check pixel
+							var canvas = document.createElement('canvas');
+							canvas.width = sprite.img.width; //not entirely sure if this is a necessary step
+							canvas.height = sprite.img.height;
+							var ctx = canvas.getContext('2d');
+							//draw image to canvas
+							ctx.drawImage(sprite.img,0,0);
+							//check image data
+							var imgdata = ctx.getImageData(evt.canvasX-sprite.x,evt.canvasY-sprite.y,1,1).data;
+							if (imgdata[3] <= 0)continue;//if the pixel is transparent, overlook it
+						}
+						if (evt.type=='click'&&sprite.onclick)sprite.onclick(evt);
+						else if (evt.type=='mousemove'&&sprite.onmousemove)sprite.onmousemove(evt);
+						break;
+					}
+				}
+			}
+			function begin ()
+			{
+				setInterval(pulse,250);
+				document.getElementById('gameScreen').onclick=screenclick;
+				document.getElementById('gameScreen').onmousemove=screenclick;
+				document.addEventListener('keydown',keydown);
+			}
+			var map = new PlayfieldGraphic(mapdata);
+			
+			function keydown (evt)
+			{
+				console.log(evt.keyCode);
+				switch (evt.keyCode)
+				{
+					//space
+					case 32:
+					map.playerAbility = 'end_turn';
+					break;
+					//1
+					case 49:
+					map.playerAbility = 'walk';
+					break;
+					//2
+					case 50:
+					map.playerAbility = 'shoot';
+					break;
+					default:
+					return;
+					break;
+				}
+				map.refreshUI();
+				console.log(map.playerAbility);
+			}
+			function test ()
+			{
+				begin();
+				var newmob = new TestMob();
+				newmob.x = 1;
+				newmob.y = 1;
+				newmob.faction = 'player';
+				map.field.addMob(newmob);
+				map.field.modeCombat(newmob);
+				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};
+			}
+		</script>
+	</head>
+	<body onload='test();'>
+		<canvas width=1280 height=960 id='gameScreen' onclick='screenclick'></canvas>
+	</body>
+</html>
