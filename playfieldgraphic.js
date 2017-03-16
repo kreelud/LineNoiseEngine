@@ -1,5 +1,3 @@
-
-
 function PlayfieldGraphic (map)
 {
 	this.belowMobs = document.createElement('canvas'); //canvas representing all layers below moblayer
@@ -13,12 +11,14 @@ function PlayfieldGraphic (map)
 	this.width = 1280;
 	this.height = 640;
 	
-	this.belowMobs.width = this.map.tilewidth*this.map.width;
-	this.belowMobs.height = this.map.tileheight*this.map.height;
-	this.aboveMobs.width = this.map.tilewidth*this.map.width;
-	this.aboveMobs.height = this.map.tileheight*this.map.height;
-	this.uiLayer.width = this.map.tilewidth*this.map.width;
-	this.uiLayer.height = this.map.tileheight*this.map.height;
+	var w = this.map.tilewidth*this.map.width
+	var h = this.map.tileheight*this.map.height
+	this.belowMobs.width = w;
+	this.belowMobs.height = h;
+	this.aboveMobs.width = w;
+	this.aboveMobs.height = h;
+	this.uiLayer.width = w;
+	this.uiLayer.height = h;
 	
 	this.playerAbility = 'walk'; //currently selected ability controlled by the ui
 	//-------------------------------
