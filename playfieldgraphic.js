@@ -13,12 +13,14 @@ function PlayfieldGraphic (map)
 	this.width = 1280;
 	this.height = 640;
 	
-	this.belowMobs.width = this.map.tilewidth*this.map.width;
-	this.belowMobs.height = this.map.tileheight*this.map.height;
-	this.aboveMobs.width = this.map.tilewidth*this.map.width;
-	this.aboveMobs.height = this.map.tileheight*this.map.height;
-	this.uiLayer.width = this.map.tilewidth*this.map.width;
-	this.uiLayer.height = this.map.tileheight*this.map.height;
+	var w = this.map.tilewidth*this.map.width
+	var h = this.map.tileheight*this.map.height
+	this.belowMobs.width = w;
+	this.belowMobs.height = h;
+	this.aboveMobs.width = w;
+	this.aboveMobs.height = h;
+	this.uiLayer.width = w;
+	this.uiLayer.height = h;
 	
 	this.playerAbility = 'walk'; //currently selected ability controlled by the ui
 	//-------------------------------
@@ -80,39 +82,40 @@ function PlayfieldGraphic (map)
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
-		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
+		
+		var achar = this.field.activePlayerCharacter;
+		if (achar == null || achar.currentMove!=='' || this.playerAbility!=='walk')
 		{
-			var achar = this.field.activePlayerCharacter;
-			var path = this.field.astar([achar.x,achar.y],this.mouseTile);
-			if (path)
-			{
-				path.unshift([achar.x,achar.y]);
-				ctx.beginPath();
-				ctx.lineWidth = 5;
-				ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
-				ctx.strokeStyle='#00ff00';
-				var switched = false;
-				for (var c1=0;c1<path.length;c1++)
-				{
-					
-					
-					if (c1>achar.remainingMoves && !switched)
-					{
-						ctx.stroke();
-						ctx.beginPath();
-						ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
-						ctx.strokeStyle='#ff0000';
-						switched = true;
-					}
-					ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
-				}
-				ctx.stroke();
-			}
-			else //no path found
-			{
-				
-			}
+			// player not found or incompatible
+			return;
 		}
+		
+		var path = this.field.astar([achar.x,achar.y],this.mouseTile);
+		if (!path)
+		{
+			// no path found
+			return;
+		}
+			
+		path.unshift([achar.x,achar.y]);
+		ctx.beginPath();
+		ctx.lineWidth = 5;
+		ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
+		ctx.strokeStyle='#00ff00';
+		var switched = false;
+		for (var c1=0;c1<path.length;c1++)
+		{
+			if (!switched && c1>achar.remainingMoves)
+			{
+				ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
+				ctx.strokeStyle='#ff0000';
+				switched = true;
+			}
+			ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+		}
+		ctx.stroke();
 	};
 	this.getTile = function (gid)
 	{
