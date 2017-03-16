@@ -78,7 +78,7 @@ function Mob ()
 	{
 		
 	}
-	this.hostileToMob(mob)
+	this.hostileToMob = function (mob)
 	{
 		return this.faction !=mob.faction;
 	}

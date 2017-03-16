@@ -197,9 +197,10 @@ function Field ()
 	this.getVisibleMobs = function (character)  //used for ai vision (and player vision)
 	{
 		var output = [];
-		for (var c1=0;c1<this.mobs.length;c1++)
+		var mobs = this.getMobs();
+		for (var c1=0;c1<mobs.length;c1++)
 		{
-			if (tileVisible(character,this.mobs[c1].x,this.mobs[c1].y))output.push(this.mobs[c1]);
+			if (this.tileVisible(character,mobs[c1].x,mobs[c1].y))output.push(mobs[c1]);
 		}
 		return output;
 	};
