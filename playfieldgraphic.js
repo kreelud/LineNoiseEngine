@@ -1,5 +1,3 @@
-
-
 function PlayfieldGraphic (map)
 {
 	this.belowMobs = document.createElement('canvas'); //canvas representing all layers below moblayer
@@ -82,40 +80,39 @@ function PlayfieldGraphic (map)
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
-		
-		var achar = this.field.activePlayerCharacter;
-		if (achar == null || achar.currentMove!=='' || this.playerAbility!=='walk')
+		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 		{
-			// player not found or incompatible
-			return;
-		}
-		
-		var path = this.field.astar([achar.x,achar.y],this.mouseTile);
-		if (!path)
-		{
-			// no path found
-			return;
-		}
-			
-		path.unshift([achar.x,achar.y]);
-		ctx.beginPath();
-		ctx.lineWidth = 5;
-		ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
-		ctx.strokeStyle='#00ff00';
-		var switched = false;
-		for (var c1=0;c1<path.length;c1++)
-		{
-			if (!switched && c1>achar.remainingMoves)
+			var achar = this.field.activePlayerCharacter;
+			var path = this.field.astar([achar.x,achar.y],this.mouseTile);
+			if (path)
 			{
-				ctx.stroke();
+				path.unshift([achar.x,achar.y]);
 				ctx.beginPath();
-				ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
-				ctx.strokeStyle='#ff0000';
-				switched = true;
+				ctx.lineWidth = 5;
+				ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
+				ctx.strokeStyle='#00ff00';
+				var switched = false;
+				for (var c1=0;c1<path.length;c1++)
+				{
+					
+					
+					if (c1>achar.remainingMoves && !switched)
+					{
+						ctx.stroke();
+						ctx.beginPath();
+						ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
+						ctx.strokeStyle='#ff0000';
+						switched = true;
+					}
+					ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+				}
+				ctx.stroke();
 			}
-			ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+			else //no path found
+			{
+				
+			}
 		}
-		ctx.stroke();
 	};
 	this.getTile = function (gid)
 	{
