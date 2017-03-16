@@ -2,6 +2,8 @@ function Mob ()
 {
 	this.name = "mob";
 	this.knownMobs = {}; //mob, time
+	this.mobMemoryTurns = 3;
+	this.mobMemoryTime = 5000;
 	this.fieldOfView = (19 * Math.PI) / 30;
 	this.visionRange = 8;
 	this.facing = 1; //like a dial pad
@@ -74,29 +76,23 @@ function Mob ()
 	}
 	this.ai = function () 
 	{
-		var mob = this
-		var func = function ()
+		
+	}
+	this.hostileToMob(mob)
+	{
+		return this.faction !=mob.faction;
+	}
+	//if this mob was not aware of perceived mob, abandon path, returns true if wants combat
+	this.perceiveMob = function (mob)
+	{
+		var hostile = this.hostileToMob(mob);
+		if (!this.knownMobs[mob.name]) 
 		{
-			var fie = this.field;
-			var mobi = mob;
-			var func2 = function ()
-			{
-				fie.mobAnimationComplete(mobi);
-			};
-			func2();
-		};
-		if (this.remainingMoves > 0)
-		{
-			if (field.registerMove(this,"walk"))
-			{
-				this.ready = Date.now() + 2000;
-				
-				setTimeout(func,2000);
-				return;
-			}
+			this.currentPath = []; //discard the path if it encounters a new mob
+			if (hostile)this.getMove();
 		}
-		field.registerMove(this,'wait');
-		setTimeout(func,1);
+		this.knownMobs[mob.name]=this.mobMemoryTurns; //this is only meaningful in combat, otherwise ignored.
+		return hostile;
 	}
 	//used in story mode and for player control
 	this.forceMove = function (move,target=[0,0],text='')

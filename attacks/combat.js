@@ -1,4 +1,4 @@
-window.Attacks['combat'] = function (mob,field)
+window.Attacks['combat'] = function (mob,target,field)
 {
 	field.modeCombat(mob);
 	return true;

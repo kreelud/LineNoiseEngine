@@ -15,6 +15,12 @@ function Field ()
 	this.activeMob = 0; //only meaningful in combat
 	this.storyScript = [];
 	this.activePlayerCharacter = null;
+	
+	//a callback to notify PlayfieldGraphic that the active character has changed, so that the camera can be recentered
+	this.newActive = function ()
+	{
+		
+	}
 	//add characters
 	//character sight
 	this.addMob = function (mob)
@@ -188,7 +194,7 @@ function Field ()
 		}
 		return output;
 	};
-	this.getVisibleCharacters = function (character)  //used for ai vision (and player vision)
+	this.getVisibleMobs = function (character)  //used for ai vision (and player vision)
 	{
 		var output = [];
 		for (var c1=0;c1<this.mobs.length;c1++)
@@ -199,7 +205,41 @@ function Field ()
 	};
 	this.noise = function (maker,volume) //alerts other mobs to the presence of "maker"
 	{
-		
+		var mobs = this.getMobs();
+		for (var c1=0,len=mobs.length;c1<len;c1++)
+		{
+			var mob = mobs[c1]
+			if (volume >= Math.round(Math.sqrt(Math.pow(mob.x-maker.x,2)+Math.pow(mob.y-maker.y))))this.mobInform(mob,maker);
+		}
+		//todo: add a record so it can be recorded for playfieldgraphic
+	};
+	this.mobLook = function (mob)
+	{
+		var visibleMobs = this.getVisibleMobs(mob);
+		for (var c1=0,len=visibleMobs.length;c1>len;c1++)
+		{
+			this.mobInform(mob,visibleMobs[c1]);
+		}
+	};
+	this.mobInform = function (mob, target)
+	{
+		//if in peaceful mode, check if target is hostile
+		if (mob.perceiveMob(mob) &&this.mode=='peaceful')
+		{
+			this.modeCombat(mob);//this will clear all mob perception
+			this.mobLook(mob);
+			this.mobInform(mob,target); //make sure the mob remembers what started the fight
+			mob.getMove();
+		}
+	};
+	this.clearMobPerception = function ()
+	{
+		var mobs = this.getMobs();
+		for (var c1=0,len=mobs.length;c1<len;c1++)
+		{
+			mobs[c1].knownMobs={};
+			this.mobLook(mobs[c1]);
+		}
 	};
 	this.modePeaceful = function ()
 	{
@@ -213,6 +253,8 @@ function Field ()
 	};
 	this.modeCombat = function (activeMob)
 	{
+		this.clearMobPerception();
+		
 		this.mode = 'combat';
 		if (activeMob == null)this.cycleActiveFaction();
 		else
@@ -231,7 +273,6 @@ function Field ()
 			{
 				active[c1].refresh();
 			}
-			activeMob.getMove();
 		}
 	};
 	this.modeStory = function (script)
