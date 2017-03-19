@@ -9,6 +9,8 @@
 		<script src='mobsprite.js'></script>
 		<script src='mobs/testmob.js'></script>
 		<script src='mobsprites/testsprite.js'></script>
+		<script src='mobs/sentinel.js'></script>
+		<script src='mobsprites/sentinel.js'></script>
 		<script src='assets/test.json'></script>
 		<script src='assets/test.json'></script>
 		<script>
@@ -156,7 +158,17 @@
 				newmob.y = 1;
 				newmob.faction = 'player';
 				map.field.addMob(newmob);
-				map.field.modeCombat(newmob);
+				
+				var sentinel = new Sentinel();
+				sentinel.x = 5;
+				sentinel.y = 5;
+				sentinel.faction = 'enemy';
+				sentinel.facing = 6;
+				
+				//console.log (map.field.tileVisible(sentinel,6,5))
+				map.field.addMob(sentinel);
+				map.field.modePeaceful(newmob);
+				
 				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};
 			}
 		</script>

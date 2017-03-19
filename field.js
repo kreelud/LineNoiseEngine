@@ -86,8 +86,17 @@ function Field ()
 		if (this.activeFaction=='player')this.activePlayerCharacter = this.factions['player'][0];
 		else this.activePlayerCharacter = null;
 	};
+	this.refreshVision = function ()
+	{
+		var mobs = this.getMobs();
+		for (var c1=0,len=mobs.length;c1<len;c1++)
+		{
+			this.mobLook(mobs[c1]);
+		}
+	};
 	this.mobAnimationComplete = function (mob) //called when a mob finishes animating
 	{
+		
 		if (this.mode == 'peaceful')
 		{
 			mob.refresh();
@@ -217,7 +226,7 @@ function Field ()
 	this.mobLook = function (mob)
 	{
 		var visibleMobs = this.getVisibleMobs(mob);
-		for (var c1=0,len=visibleMobs.length;c1>len;c1++)
+		for (var c1=0,len=visibleMobs.length;c1<len;c1++)
 		{
 			this.mobInform(mob,visibleMobs[c1]);
 		}

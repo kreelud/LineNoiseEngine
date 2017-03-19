@@ -80,7 +80,7 @@ function PlayfieldGraphic (map)
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
-		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
+		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk'&&this.mouseTile)
 		{
 			var achar = this.field.activePlayerCharacter;
 			var path = this.field.astar([achar.x,achar.y],this.mouseTile);
@@ -96,7 +96,7 @@ function PlayfieldGraphic (map)
 				{
 					
 					
-					if (c1>achar.remainingMoves && !switched)
+					if (c1>achar.remainingMoves && !switched &&this.field.mode=='combat')
 					{
 						ctx.stroke();
 						ctx.beginPath();

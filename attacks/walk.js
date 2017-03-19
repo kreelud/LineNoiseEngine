@@ -12,5 +12,6 @@ window.Attacks['walk'] = function (mob,target,field)
 	mob.x = target[0];
 	mob.y = target[1];
 	mob.remainingMoves--;
+	field.refreshVision();
 	return true;
 }
