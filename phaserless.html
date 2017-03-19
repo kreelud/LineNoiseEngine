@@ -22,15 +22,17 @@
 			{
 				this.callback = callback; //the function that will be called when all images are loaded
 				this.remaining = stack.length; //the number of images yet to be loaded
-				this.decr = function()
+				
+				var loader = this;
+				var decr = function()
 				{
-					this.remaining--;
-					if (this.remaining <=0)this.callback();
+					loader.remaining--;
+					if (loader.remaining <=0)
+						loader.callback();
 				};
 				for (var c1=0;c1<stack.length;c1++)
 				{
 					var pic = stack[c1];
-					
 					if (imageCache[pic.label]) //picture is already in cache
 					{
 						this.decr();
@@ -38,9 +40,10 @@
 					}
 					
 					imageCache[pic.label]=document.createElement('img');
-					imageCache[pic.label].onload = this.decr;
+					imageCache[pic.label].onload = decr;
 					imageCache[pic.label].src = pic.src;
-					if (imageCache[pic.label].complete) this.decr();
+					if (imageCache[pic.label].complete)
+						decr();
 				}
 			}
 			function pulse ()
