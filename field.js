@@ -31,7 +31,9 @@ function Field ()
 			this.factions[mob.faction] = [];
 		}
 		this.factions[mob.faction].push(mob);
-		if (this.activePlayerCharacter==null && mob.faction=='player')this.activePlayerCharacter = mob;
+		if (this.activePlayerCharacter==null && mob.faction=='player')
+			this.activePlayerCharacter = mob;
+		
 		mob.field = this;
 	};
 	this.getMobs = function ()
@@ -50,18 +52,15 @@ function Field ()
 	}
 	this.tileOpaque = function (x,y) //visual
 	{
-		if (x<0||x>=this.grid.length)return true;
-		if (y<0||y>=this.grid[0].length)return true;
-		if (this.grid[x][y] == 2)return true;
-		return false;
+		return x<0||x>=this.grid.length ||
+			   y<0||y>=this.grid[0].length ||
+			   this.grid[x][y] == 2;
 	};
 	this.tileImpassable = function (x,y,mob=false) //if mob is set, will only return false if mob knows obstruction
 	{
-		if (x<0||x>=this.grid.length)return true;
-		if (y<0||y>=this.grid[0].length)return true;
-		if (this.grid[x][y] == 2 || this.grid[x][y] == 3)return true;
-		if (this.mobAt(x,y))return true;
-		return false;
+		return this.tileOpaque(x, y) ||
+		       this.grid[x][y] == 3 ||
+			   this.mobAt(x,y);
 	}
 	this.mobAt = function (x,y,mob = false) //if mob is set, will only return true if mob knows target mob
 	{
@@ -152,7 +151,8 @@ function Field ()
 			var ystart = Math.min(mob.y,targetY);
 			for (var ycount=0;ycount<yDiff;ycount++)
 			{
-				if (this.tileOpaque(targetX,ystart+ycount))return false; //obstruction in the way of target
+				if (this.tileOpaque(targetX,ystart+ycount))
+					return false; //obstruction in the way of target
 			}
 		}
 		else
@@ -190,7 +190,6 @@ function Field ()
 			for (var ycount=mob.y - mob.visionRange/2;ycount<mob.y+mob.visionRange;ycount++)
 			{
 				if (this.tileVisible(mob,xcount,ycount))output.push([xcount,ycount]);
-				
 			}
 		}
 		return output;
@@ -211,7 +210,8 @@ function Field ()
 		for (var c1=0,len=mobs.length;c1<len;c1++)
 		{
 			var mob = mobs[c1]
-			if (volume >= Math.round(Math.sqrt(Math.pow(mob.x-maker.x,2)+Math.pow(mob.y-maker.y))))this.mobInform(mob,maker);
+			if (volume >= Math.round(Math.sqrt(Math.pow(mob.x-maker.x,2)+Math.pow(mob.y-maker.y))))
+				this.mobInform(mob,maker);
 		}
 		//todo: add a record so it can be recorded for playfieldgraphic
 	};
@@ -223,6 +223,7 @@ function Field ()
 			this.mobInform(mob,visibleMobs[c1]);
 		}
 	};
+	
 	this.refreshVision = function ()
 	{
 		var mobs = this.getMobs();
@@ -234,7 +235,7 @@ function Field ()
 	this.mobInform = function (mob, target)
 	{
 		//if in peaceful mode, check if target is hostile
-		if (mob.perceiveMob(mob) &&this.mode=='peaceful')
+		if (this.mode=='peaceful' && mob.perceiveMob(mob))
 		{
 			this.modeCombat(mob);//this will clear all mob perception
 			this.mobLook(mob);
@@ -264,10 +265,12 @@ function Field ()
 	};
 	this.modeCombat = function (activeMob)
 	{
-		if (this.mode=='combat')return; //prevent recursion
-		this.clearMobPerception();
+		if (this.mode=='combat')
+			return; //prevent recursion
 		
 		this.mode = 'combat';
+		this.clearMobPerception();
+		
 		if (activeMob == null)this.cycleActiveFaction();
 		else
 		{
@@ -289,16 +292,20 @@ function Field ()
 	};
 	this.modeStory = function (script)
 	{
-		if (this.mode=='story')return; //prevent recursion
-		this.activePlayerCharacter = null;
+		if (this.mode=='story')
+			return; //prevent recursion
+		
 		this.mode = 'story';
+		this.activePlayerCharacter = null;
 		this.storyScript = script;
 		var event = this.storyScript.shift();
 		event.mob.forceMove(event.move,event.text);
 	};
 	this.astar = function (start,end) //returns an array representing a path between start and end, or false on failure
 	{
-		if (this.tileImpassable(end[0],end[1]))return false;
+		if (this.tileImpassable(end[0],end[1]))
+			return false;
+		
 		//record room costs as {'cost':,'prev':,'coords'}
 		var rooms = [[]];
 		var toSearch = [];

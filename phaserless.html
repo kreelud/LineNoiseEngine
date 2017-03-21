@@ -9,6 +9,7 @@
 		<script src='mobsprite.js'></script>
 		<script src='mobs/testmob.js'></script>
 		<script src='mobsprites/testsprite.js'></script>
+		<script src='mobs/guard.js'></script>
 		<script src='mobs/sentinel.js'></script>
 		<script src='mobsprites/sentinel.js'></script>
 		<script src='assets/test.json'></script>
@@ -160,23 +161,15 @@
 			function test ()
 			{
 				begin();
-				
-				var newmob = new TestMob();
-				newmob.x = 1;
-				newmob.y = 1;
-				newmob.faction = 'player';
-				newmob.name='protag';
+					
+				var newmob = new TestMob(1, 1, "player");
+				newmob.name = 'protag';
 				map.field.addMob(newmob);
 				
-				var sentinel = new Sentinel();
-				sentinel.x = 5;
-				sentinel.y = 5;
-				sentinel.faction = 'enemy';
+				var sentinel = new Sentinel(5, 5, "enemy");
 				sentinel.facing = 6;
 				sentinel.name = 'senti';
-				
-				
-				
+
 				map.field.addMob(sentinel);
 				console.log (map.field.tileVisible(sentinel,6,5));
 				map.field.modePeaceful(newmob);
