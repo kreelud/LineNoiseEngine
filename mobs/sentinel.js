@@ -1,17 +1,22 @@
 //doesn't move, just watches.  
-
-function Sentinel ()
+function Sentinel(x, y, faction)
 {
-	var parent = new Mob();
-	var keys = Object.keys(parent);
-	for (var c1=0;c1<keys.length;c1++)this[keys[c1]] = parent[keys[c1]];
-
+	Guard.call(this, x, y, faction);
 	this.img = MobSprites.Sentinel.bind(this);
-	this.ai = function ()
-	{
-		console.log(this.field.tileVisible(this,6,5));
-		this.currentMove = 'alert';
-		this.currentMoveTarget = null;
-		this.currentMoveTime = Date.now();
-	};
 }
+
+Sentinel.prototype.name = "sentinel";
+Sentinel.prototype = Object.create(Guard.prototype);
+
+Sentinel.prototype.getMove = function()
+{
+	// throw invalid exception?
+};
+
+Sentinel.prototype.ai = function()
+{
+	this.currentMove = 'alert';
+	this.currentMoveTarget = null;
+	this.currentMoveTime = Date.now();
+};
+
