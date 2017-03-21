@@ -86,17 +86,8 @@ function Field ()
 		if (this.activeFaction=='player')this.activePlayerCharacter = this.factions['player'][0];
 		else this.activePlayerCharacter = null;
 	};
-	this.refreshVision = function ()
-	{
-		var mobs = this.getMobs();
-		for (var c1=0,len=mobs.length;c1<len;c1++)
-		{
-			this.mobLook(mobs[c1]);
-		}
-	};
 	this.mobAnimationComplete = function (mob) //called when a mob finishes animating
 	{
-		
 		if (this.mode == 'peaceful')
 		{
 			mob.refresh();
@@ -226,7 +217,7 @@ function Field ()
 	this.mobLook = function (mob)
 	{
 		var visibleMobs = this.getVisibleMobs(mob);
-		for (var c1=0,len=visibleMobs.length;c1<len;c1++)
+		for (var c1=0,len=visibleMobs.length;c1>len;c1++)
 		{
 			this.mobInform(mob,visibleMobs[c1]);
 		}
@@ -253,6 +244,7 @@ function Field ()
 	};
 	this.modePeaceful = function ()
 	{
+		if (this.mode=='peaceful')return; //prevent recursion
 		this.activePlayerCharacter = this.factions['player'][0];
 		this.mode='peaceful';
 		var mobs = this.getMobs();
@@ -263,6 +255,7 @@ function Field ()
 	};
 	this.modeCombat = function (activeMob)
 	{
+		if (this.mode=='combat')return; //prevent recursion
 		this.clearMobPerception();
 		
 		this.mode = 'combat';
@@ -287,6 +280,7 @@ function Field ()
 	};
 	this.modeStory = function (script)
 	{
+		if (this.mode=='story')return; //prevent recursion
 		this.activePlayerCharacter = null;
 		this.mode = 'story';
 		this.storyScript = script;

@@ -10,9 +10,10 @@ function PlayfieldGraphic (map)
 	this.firstGids = {};
 	this.width = 1280;
 	this.height = 640;
+	var cameraPanSpeedMax = 0.5; //pixels per ms
 	
-	var w = this.map.tilewidth*this.map.width
-	var h = this.map.tileheight*this.map.height
+	var w = this.map.tilewidth*this.map.width;
+	var h = this.map.tileheight*this.map.height;
 	this.belowMobs.width = w;
 	this.belowMobs.height = h;
 	this.aboveMobs.width = w;
@@ -34,12 +35,21 @@ function PlayfieldGraphic (map)
 	
 	this.canvasXYToTile = function (canvasX,canvasY)
 	{
-		return [Math.floor((canvasX-this.camera.x)/this.tileWidth),Math.floor((canvasY-this.camera.y)/this.tileHeight)];
+		return [Math.floor((canvasX+this.camera.x)/this.tileWidth),Math.floor((canvasY+this.camera.y)/this.tileHeight)];
 	};
 	this.onclick = function (evt)
 	{
 		this.refreshUI();
 		var currentTile = this.canvasXYToTile (evt.canvasX,evt.canvasY);
+		
+		if (this.playerAbility == 'center')
+		{
+			this.camera.x = Math.max(Math.min(evt.canvasX - this.width/2,this.map.tilewidth*this.map.width-this.width),0);
+			this.camera.y = Math.max(Math.min(evt.canvasY - this.height/2,this.map.tileheight*this.map.height-this.height),0);
+			console.log([this.camera.x,this.camera.y]);
+			return;
+		}
+		
 		if (this.field.activePlayerCharacter ==null)return; //not the player's turn
 		
 		//if it's combat and the player's turn, force mob move
@@ -69,18 +79,14 @@ function PlayfieldGraphic (map)
 			this.mouseTile = currentTile;
 			this.refreshUI();
 		}
-		//if it's in the first or last 10% of the screen, move the camera in its direction
-		if (true)
-		{
-			
-		}
+		
 	};
 	this.refreshUI = function ()
 	{
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
-		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk'&&this.mouseTile)
+		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 		{
 			var achar = this.field.activePlayerCharacter;
 			var path = this.field.astar([achar.x,achar.y],this.mouseTile);
@@ -96,7 +102,7 @@ function PlayfieldGraphic (map)
 				{
 					
 					
-					if (c1>achar.remainingMoves && !switched &&this.field.mode=='combat')
+					if (c1>achar.remainingMoves && !switched)
 					{
 						ctx.stroke();
 						ctx.beginPath();
@@ -197,6 +203,7 @@ function PlayfieldGraphic (map)
 		{
 			return this.belowMobs;
 		}
+		
 		var output = document.createElement('canvas');
 		output.width = this.width;
 		output.height = this.height;
