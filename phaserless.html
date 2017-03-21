@@ -160,10 +160,12 @@
 			function test ()
 			{
 				begin();
+				
 				var newmob = new TestMob();
 				newmob.x = 1;
 				newmob.y = 1;
 				newmob.faction = 'player';
+				newmob.name='protag';
 				map.field.addMob(newmob);
 				
 				var sentinel = new Sentinel();
@@ -171,9 +173,12 @@
 				sentinel.y = 5;
 				sentinel.faction = 'enemy';
 				sentinel.facing = 6;
+				sentinel.name = 'senti';
 				
-				//console.log (map.field.tileVisible(sentinel,6,5))
+				
+				
 				map.field.addMob(sentinel);
+				console.log (map.field.tileVisible(sentinel,6,5));
 				map.field.modePeaceful(newmob);
 				
 				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};

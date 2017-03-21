@@ -9,6 +9,7 @@ function Sentinel ()
 	this.img = MobSprites.Sentinel.bind(this);
 	this.ai = function ()
 	{
+		console.log(this.field.tileVisible(this,6,5));
 		this.currentMove = 'alert';
 		this.currentMoveTarget = null;
 		this.currentMoveTime = Date.now();

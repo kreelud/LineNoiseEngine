@@ -11,11 +11,21 @@ MobSprites.Sentinel = function (mob)
 		{
 			if (Date.now() - mob.currentMoveTime > 5000)
 			{
-				console.log(Object.keys(mob.knownMobs));
 				animationComplete = true;
+				console.log(mob.knownMobs);
 			}
 		}
 		else animationComplete = true;
 	}
-	return[{'x':mob.x,'y':mob.y,'img':img,'ac':animationComplete}];
+	var output = [{'x':mob.x,'y':mob.y,'img':img,'ac':animationComplete}];
+	
+	//temporary, for vision test
+	/*
+	var tiles = mob.field.getVisibleTiles(mob);
+	for (var c1=0,len=tiles.length;c1<len;c1++)
+	{
+		output.push({'x':tiles[c1][0],'y':tiles[c1][1],'img':img,'ac':animationComplete});
+	}*/
+	
+	return output;
 }

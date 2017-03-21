@@ -189,7 +189,8 @@ function Field ()
 		{
 			for (var ycount=mob.y - mob.visionRange/2;ycount<mob.y+mob.visionRange;ycount++)
 			{
-				if (tileVisible(mob,xcount,ycount))output.push([xcount,ycount]);
+				if (this.tileVisible(mob,xcount,ycount))output.push([xcount,ycount]);
+				
 			}
 		}
 		return output;
@@ -217,9 +218,17 @@ function Field ()
 	this.mobLook = function (mob)
 	{
 		var visibleMobs = this.getVisibleMobs(mob);
-		for (var c1=0,len=visibleMobs.length;c1>len;c1++)
+		for (var c1=0,len=visibleMobs.length;c1<len;c1++)
 		{
 			this.mobInform(mob,visibleMobs[c1]);
+		}
+	};
+	this.refreshVision = function ()
+	{
+		var mobs = this.getMobs();
+		for (var c1=0,len=mobs.length;c1<len;c1++)
+		{
+			this.mobLook(mobs[c1]);
 		}
 	};
 	this.mobInform = function (mob, target)

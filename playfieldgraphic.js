@@ -102,7 +102,7 @@ function PlayfieldGraphic (map)
 				{
 					
 					
-					if (c1>achar.remainingMoves && !switched)
+					if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
 					{
 						ctx.stroke();
 						ctx.beginPath();
