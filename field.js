@@ -193,9 +193,9 @@ function Field ()
 	this.getVisibleTiles = function (mob) //used for player vision
 	{
 		var output = [];
-		for (var xcount = mob.x - mob.visionRange/2;xcount<mob.x+mob.visionRange;xcount++)
+		for (var xcount = mob.x - mob.visionRange;xcount<mob.x+mob.visionRange;xcount++)
 		{
-			for (var ycount=mob.y - mob.visionRange/2;ycount<mob.y+mob.visionRange;ycount++)
+			for (var ycount=mob.y - mob.visionRange;ycount<mob.y+mob.visionRange;ycount++)
 			{
 				//ray cast every tile within range
 				if (this.tileVisible(mob, xcount, ycount))
@@ -248,7 +248,7 @@ function Field ()
 	this.mobInform = function (mob, target)
 	{
 		//if in peaceful mode, check if target is hostile
-		if (this.mode=='peaceful' && mob.perceiveMob(mob))
+		if (mob.perceiveMob(target) && this.mode=='peaceful' && mob.faction != 'player')
 		{
 			this.modeCombat(mob);//this will clear all mob perception
 			this.mobLook(mob);
@@ -282,6 +282,7 @@ function Field ()
 			return; //prevent recursion
 		
 		this.mode = 'combat';
+		console.log('combat');
 		this.clearMobPerception();
 		
 		if (activeMob == null)this.cycleActiveFaction();

@@ -8,11 +8,6 @@ function Sentinel(x, y, faction)
 Sentinel.prototype.name = "sentinel";
 Sentinel.prototype = Object.create(Guard.prototype);
 
-Sentinel.prototype.getMove = function()
-{
-	// throw invalid exception?
-};
-
 Sentinel.prototype.ai = function()
 {
 	this.currentMove = 'alert';

@@ -20,10 +20,10 @@ Mob.prototype.animationQueue=[];
 Mob.prototype.animationStart = 0;
 Mob.prototype.status = "ok";
 Mob.prototype.currentPath = []; //if the mob has a path, it will follow it when prompted to move.
-Mob.prototype
+
 Mob.prototype.currentMove = '';
 Mob.prototype.currentMoveTime=0;
-Mob.prototype
+
 Mob.prototype.lastHit = ''; //the last move this mob was affected by
 Mob.prototype.lastHitTime = '';
 
@@ -40,6 +40,31 @@ Mob.prototype.angleTable = {'1':(0.75 * Math.PI),
 Mob.prototype.facingAngle = function()
 {
 	return this.angleTable[this.facing];
+};
+
+Mob.prototype.faceTile = function (x,y)
+{
+	//get the angle of the tile
+	var xDiff = x-this.x;
+	var yDiff = y-this.y;
+		
+	var circle = Math.PI * 2;
+	var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
+	//round to the nearest 0.25 * Math.PI
+	//Math.round(angle / (0.25 * Math.PI)) * (0.25 * Math.PI); <-feels like this approach risks rounding errors
+	
+	var facings = Object.keys(this.angleTable);
+	this.facing = '1';
+	var bestFacingDiff = Math.abs(this.angleTable['1'] - angle);
+	for (var c1=0,len=facings.length;c1<len;c1++)
+	{
+		var diff = Math.abs(this.angleTable[facings[c1]] - angle);
+		if (diff < bestFacingDiff)
+		{
+			this.facing = facings[c1];
+			bestFacingDiff = diff;
+		}
+	}
 };
 
 Mob.prototype.animationComplete = function() //called by mobsprite
@@ -64,15 +89,25 @@ Mob.prototype.wantsCombat = function()
 {
 	return false;
 };
-
+Mob.prototype.endTurn = function ()
+{
+	this.remainingMoves = 0;
+	this.attackedThisTurn = true;
+	var known = Object.keys(this.knownMobs);
+	for (var c1=0,len=known.length;c1<len;c1++)
+	{
+		this.knownMobs[known[c1]]--;
+		if (this.knownMobs[known[c1]] <= 0)delete this.knownMobs[known[c1]];
+	}
+};
 //prompted by faction
 Mob.prototype.getMove = function()
 {
 	//if has a path, and hasn't discovered any new mobs
 	if (this.currentPath.length > 0)
 	{
-		var targ = this.currentPath.unshift();
-		if (window.Attacks['walk'](this,this.currentPath.shift(),this.field))
+		var targ = this.currentPath.shift();
+		if (window.Attacks['walk'](this,targ,this.field))
 		{
 			this.currentMove = 'walk';
 			this.currentMoveTarget = targ;
@@ -99,7 +134,7 @@ Mob.prototype.ai = function()
 
 Mob.prototype.hostileToMob = function(mob)
 {
-	return this.faction !=Mob.faction;
+	return this.faction !=mob.faction;
 };
 
 //if this mob was not aware of perceived mob, abandon path, returns true if wants combat
