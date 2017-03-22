@@ -235,7 +235,7 @@ function Field ()
 	this.mobInform = function (mob, target)
 	{
 		//if in peaceful mode, check if target is hostile
-		if (this.mode=='peaceful' && mob.perceiveMob(mob))
+		if (mob.perceiveMob(target) && this.mode=='peaceful' && mob.faction != 'player')
 		{
 			this.modeCombat(mob);//this will clear all mob perception
 			this.mobLook(mob);

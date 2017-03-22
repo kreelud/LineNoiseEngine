@@ -134,7 +134,7 @@ Mob.prototype.ai = function()
 
 Mob.prototype.hostileToMob = function(mob)
 {
-	return this.faction !=Mob.faction;
+	return this.faction !=mob.faction;
 };
 
 //if this mob was not aware of perceived mob, abandon path, returns true if wants combat

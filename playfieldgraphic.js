@@ -86,6 +86,9 @@ function PlayfieldGraphic (map)
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
+		
+		if (this.mouseTile!=null)
+		{
 		var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
 		if (selectedMob)
 		{
@@ -133,6 +136,7 @@ function PlayfieldGraphic (map)
 				
 			}
 		}
+	}
 	};
 	this.getTile = function (gid)
 	{
