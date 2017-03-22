@@ -185,9 +185,9 @@ function Field ()
 	{
 		var output = [];
 		//ray cast every tile within range
-		for (var xcount = mob.x - mob.visionRange/2;xcount<mob.x+mob.visionRange;xcount++)
+		for (var xcount = mob.x - mob.visionRange;xcount<mob.x+mob.visionRange;xcount++)
 		{
-			for (var ycount=mob.y - mob.visionRange/2;ycount<mob.y+mob.visionRange;ycount++)
+			for (var ycount=mob.y - mob.visionRange;ycount<mob.y+mob.visionRange;ycount++)
 			{
 				if (this.tileVisible(mob,xcount,ycount))output.push([xcount,ycount]);
 			}
@@ -269,6 +269,7 @@ function Field ()
 			return; //prevent recursion
 		
 		this.mode = 'combat';
+		console.log('combat');
 		this.clearMobPerception();
 		
 		if (activeMob == null)this.cycleActiveFaction();

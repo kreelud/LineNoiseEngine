@@ -8,6 +8,7 @@ Guard.prototype.name = "guard";
 Guard.prototype = this.lastMove = 'wait';
 Guard.prototype = Object.create(Mob.prototype);
 
+/*
 Guard.prototype.getMove = function(info)
 {
 	if (this.lastMove == 'walk')
@@ -30,7 +31,7 @@ Guard.prototype.getMove = function(info)
 		return;
 	}
 
-	if (field.registerMove(this,"walk"))
+	if (this.field.registerMove(this,"walk"))
 	{
 		this.ready = Date.now() + 2000;
 		var mob = this;
@@ -44,4 +45,4 @@ Guard.prototype.getMove = function(info)
 	var mob = this;
 	setTimeout(function () {field.mobAnimationComplete(mob);},2000);
 	this.lastMove = 'wait';
-};
+};*/

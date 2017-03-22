@@ -86,6 +86,22 @@ function PlayfieldGraphic (map)
 		//for now, the only thing here is a player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
+		var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
+		if (selectedMob)
+		{
+			//TODO: Make sure it's known to the player
+			var light = this.getTile(9);
+			var tiles = this.field.getVisibleTiles(selectedMob);
+			for (var c1=0,len=tiles.length;c1<len;c1++)
+			{
+				ctx.drawImage
+				(
+					light,
+					tiles[c1][0] * this.tileWidth,
+					tiles[c1][1]*this.tileHeight
+				);
+			}
+		}
 		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 		{
 			var achar = this.field.activePlayerCharacter;
@@ -100,8 +116,6 @@ function PlayfieldGraphic (map)
 				var switched = false;
 				for (var c1=0;c1<path.length;c1++)
 				{
-					
-					
 					if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
 					{
 						ctx.stroke();
