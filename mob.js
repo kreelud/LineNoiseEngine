@@ -37,19 +37,23 @@ Mob.prototype.angleTable = {'1':(0.75 * Math.PI),
 							'9':(1.75*Math.PI)
 							};
 
-Mob.prototype.facingAngle = function()
-{
-	return this.angleTable[this.facing];
-};
+Object.defineProperty(Mob.prototype, 'facingAngle', {
+	get: function() { return this.angleTable[this.facing]; }
+});
 
+//each mob has a 'library' of animations
+Object.defineProperty(Mob.prototype, 'sprite', {
+	get: function() { return [{'x':this.x,'y':this.y,'img':imageLibrary['priestess_walk1'],'z':50}]; }
+}); 
+							
 Mob.prototype.faceTile = function (x,y)
 {
 	//get the angle of the tile
-	var xDiff = x-this.x;
-	var yDiff = y-this.y;
+	var xDiff = x - this.x;
+	var yDiff = y - this.y;
 		
 	var circle = Math.PI * 2;
-	var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
+	var angle = (Math.atan2(yDiff, xDiff) + circle) % circle;
 	//round to the nearest 0.25 * Math.PI
 	//Math.round(angle / (0.25 * Math.PI)) * (0.25 * Math.PI); <-feels like this approach risks rounding errors
 	
@@ -78,12 +82,6 @@ Mob.prototype.refresh = function()
 {
 	this.remainingMoves = this.movesPerTurn;
 	this.attackedThisTurn = false;
-};
-
-//each mob has a 'library' of animations
-Mob.prototype.getSprite = function()
-{
-	return [{'x':this.x,'y':this.y,'img':imageLibrary['priestess_walk1'],'z':50}];
 };
 
 Mob.prototype.wantsCombat = function()
@@ -135,22 +133,23 @@ Mob.prototype.ai = function()
 	
 };
 
-Mob.prototype.hostileToMob = function(mob)
+Mob.prototype.hostileToMob = function(otherMob)
 {
-	return this.faction !=mob.faction;
+	return this.faction != otherMob.faction;
 };
 
 //if this mob was not aware of perceived mob, abandon path, returns true if wants combat
-Mob.prototype.perceiveMob = function(mob)
+Mob.prototype.perceiveMob = function(otherMob)
 {
-	var isHostile = this.hostileToMob(mob);
-	if (!this.knownMobs[mob.name]) 
+	var wantsCombat = this.hostileToMob(otherMob);
+	if (!this.knownMobs[otherMob.name]) 
 	{
 		this.currentPath = []; //discard the path if it encounters a new mob
-		if (isHostile)this.getMove();
+		if (wantsCombat)
+			this.getMove();
 	}
-	this.knownMobs[mob.name]=this.mobMemoryTurns; //this is only meaningful in combat, otherwise ignored.
-	return isHostile;
+	this.knownMobs[otherMob.name] = this.mobMemoryTurns; //this is only meaningful in combat, otherwise ignored.
+	return wantsCombat;
 };
 
 //used in story mode and for player control
@@ -158,12 +157,14 @@ Mob.prototype.forceMove = function(move,target=[0,0],text='')
 {
 	if (move == 'walk')
 	{
-		var path = this.field.astar([this.x,this.y],target,this);
-		if (!path)return;
+		var path = this.field.astar([this.x, this.y],target,this);
+		if (!path)
+			return;  // exit if no path found
+		
 		this.currentPath = path;
 		this.getMove(); //this should automatically start walking the path
 	}
-	else if (window.Attacks[move](this,target,this.field))
+	else if (window.Attacks[move](this, target, this.field))
 	{
 		this.currentMove = move;
 		this.currentMoveTarget = target;
