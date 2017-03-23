@@ -89,54 +89,59 @@ function PlayfieldGraphic (map)
 		
 		if (this.mouseTile!=null)
 		{
-		var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
-		if (selectedMob)
-		{
-			//TODO: Make sure it's known to the player
-			var light = this.getTile(9);
-			var tiles = this.field.getVisibleTiles(selectedMob);
-			for (var c1=0,len=tiles.length;c1<len;c1++)
+			var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
+			if (selectedMob)
 			{
-				ctx.drawImage
-				(
-					light,
-					tiles[c1][0] * this.tileWidth,
-					tiles[c1][1]*this.tileHeight
-				);
-			}
-		}
-		if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
-		{
-			var achar = this.field.activePlayerCharacter;
-			var path = this.field.astar([achar.x,achar.y],this.mouseTile);
-			if (path)
-			{
-				path.unshift([achar.x,achar.y]);
-				ctx.beginPath();
-				ctx.lineWidth = 5;
-				ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
-				ctx.strokeStyle='#00ff00';
-				var switched = false;
-				for (var c1=0;c1<path.length;c1++)
+				//TODO: Make sure it's known to the player
+				var light = this.getTile(9);
+				var tiles = this.field.getVisibleTiles(selectedMob);
+				for (var c1=0,len=tiles.length;c1<len;c1++)
 				{
-					if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
-					{
-						ctx.stroke();
-						ctx.beginPath();
-						ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
-						ctx.strokeStyle='#ff0000';
-						switched = true;
-					}
-					ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+					ctx.drawImage
+					(
+						light,
+						tiles[c1][0] * this.tileWidth,
+						tiles[c1][1]*this.tileHeight
+					);
 				}
-				ctx.stroke();
 			}
-			else //no path found
+			if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 			{
-				
+				//change mob facing
+				this.field.activePlayerCharacter.faceTile(this.mouseTile[0],this.mouseTile[1]);
+				if (this.playerAbility=='walk')
+				{
+					var achar = this.field.activePlayerCharacter;
+					var path = this.field.astar([achar.x,achar.y],this.mouseTile);
+					if (path)
+					{
+						path.unshift([achar.x,achar.y]);
+						ctx.beginPath();
+						ctx.lineWidth = 5;
+						ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
+						ctx.strokeStyle='#00ff00';
+						var switched = false;
+						for (var c1=0;c1<path.length;c1++)
+						{
+							if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
+							{
+								ctx.stroke();
+								ctx.beginPath();
+								ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
+								ctx.strokeStyle='#ff0000';
+								switched = true;
+							}
+							ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+						}
+						ctx.stroke();
+					}
+					else //no path found
+					{
+					
+					}
+				}
 			}
 		}
-	}
 	};
 	this.getTile = function (gid)
 	{

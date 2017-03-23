@@ -248,7 +248,7 @@ function Field ()
 	this.mobInform = function (mob, target)
 	{
 		//if in peaceful mode, check if target is hostile
-		if (mob.perceiveMob(target) && this.mode=='peaceful' && mob.faction != 'player')
+		if (this.mode=='peaceful' && mob.faction != 'player' && mob.perceiveMob(target))
 		{
 			this.modeCombat(mob);//this will clear all mob perception
 			this.mobLook(mob);
@@ -267,7 +267,9 @@ function Field ()
 	};
 	this.modePeaceful = function ()
 	{
-		if (this.mode=='peaceful')return; //prevent recursion
+		if (this.mode=='peaceful')
+			return; //prevent recursion
+		
 		this.activePlayerCharacter = this.factions['player'][0];
 		this.mode='peaceful';
 		var mobs = this.getMobs();

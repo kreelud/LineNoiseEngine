@@ -65,6 +65,7 @@ Mob.prototype.faceTile = function (x,y)
 			bestFacingDiff = diff;
 		}
 	}
+	this.field.mobLook(this);
 };
 
 Mob.prototype.animationComplete = function() //called by mobsprite
@@ -107,6 +108,8 @@ Mob.prototype.getMove = function()
 	if (this.currentPath.length > 0)
 	{
 		var targ = this.currentPath.shift();
+		this.faceTile(targ[0],targ[1]);
+
 		if (window.Attacks['walk'](this,targ,this.field))
 		{
 			this.currentMove = 'walk';
