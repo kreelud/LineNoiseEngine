@@ -23,11 +23,6 @@ function Field ()
 	}
 	//add characters
 	//character sight
-	this.pythag = function(a, b)
-	{
-		return Math.sqrt(Math.pow(a, 2) + Math.pow(b, 2));
-	};
-	
 	this.addMob = function (mob)
 	{
 		mob.noise = this.noise.bind(this);
@@ -138,22 +133,17 @@ function Field ()
 	};
 	this.tileVisible = function (mob,targetX,targetY)
 	{
-		// What to do here when targets are not set?
 		var xDiff = targetX-mob.x;
 		var yDiff = targetY-mob.y;
 		
-		var distance = this.pythag(xDiff, yDiff);
-		if (distance > mob.visionRange)
-			return false; //target too far away to be seen
-		
 		var circle = Math.PI * 2;
 		var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
-		var fov = mob.fieldOfView / 2;
-		var cw = Math.abs(mob.facingAngle() - angle);
-		var ccw = circle + cw;
+		var distance = Math.sqrt(Math.pow(xDiff,2) + Math.pow(yDiff,2));
+		if (distance > mob.visionRange)return false; //target too far away to be seen
 		
-		if (cw > fov && ccw > fov)
-			return false; //target outside field of view
+		
+		if (Math.abs(mob.facingAngle() - angle) > mob.fieldOfView/2 && Math.abs(mob.facingAngle() + circle - angle) >mob.fieldOfView/2)return false; //target outside field of view
+		
 		
 		//check obstructions
 		if (xDiff == 0)
@@ -186,6 +176,7 @@ function Field ()
 				var matchingX = (ystart+ycount - yIntercept) / slope;
 				if (this.tileOpaque(Math.floor(matchingX),ystart+ycount))return false;
 				if (this.tileOpaque(Math.round(matchingX),ystart+ycount))return false;
+				
 			}
 		}
 		return true;
@@ -193,13 +184,12 @@ function Field ()
 	this.getVisibleTiles = function (mob) //used for player vision
 	{
 		var output = [];
+		//ray cast every tile within range
 		for (var xcount = mob.x - mob.visionRange;xcount<mob.x+mob.visionRange;xcount++)
 		{
 			for (var ycount=mob.y - mob.visionRange;ycount<mob.y+mob.visionRange;ycount++)
 			{
-				//ray cast every tile within range
-				if (this.tileVisible(mob, xcount, ycount))
-					output.push([xcount,ycount]);
+				if (this.tileVisible(mob,xcount,ycount))output.push([xcount,ycount]);
 			}
 		}
 		return output;
@@ -208,11 +198,9 @@ function Field ()
 	{
 		var output = [];
 		var mobs = this.getMobs();
-		for (var c1=0,len=mobs.length;c1<len;c1++)
+		for (var c1=0;c1<mobs.length;c1++)
 		{
-			var mob = mobs[c1];
-			if (this.tileVisible(character, mob.x, mob.y))
-				output.push(mob);
+			if (this.tileVisible(character,mobs[c1].x,mobs[c1].y))output.push(mobs[c1]);
 		}
 		return output;
 	};
@@ -222,9 +210,8 @@ function Field ()
 		for (var c1=0,len=mobs.length;c1<len;c1++)
 		{
 			var mob = mobs[c1]
-			var distance = this.pythag(mob.x-maker.x, mob.y-maker.y)
-			if (volume >= Math.round(distance))
-				this.mobInform(mob, maker);
+			if (volume >= Math.round(Math.sqrt(Math.pow(mob.x-maker.x,2)+Math.pow(mob.y-maker.y))))
+				this.mobInform(mob,maker);
 		}
 		//todo: add a record so it can be recorded for playfieldgraphic
 	};
@@ -233,7 +220,7 @@ function Field ()
 		var visibleMobs = this.getVisibleMobs(mob);
 		for (var c1=0,len=visibleMobs.length;c1<len;c1++)
 		{
-			this.mobInform(mob, visibleMobs[c1]);
+			this.mobInform(mob,visibleMobs[c1]);
 		}
 	};
 	
@@ -252,7 +239,7 @@ function Field ()
 		{
 			this.modeCombat(mob);//this will clear all mob perception
 			this.mobLook(mob);
-			this.mobInform(mob, target); //make sure the mob remembers what started the fight
+			this.mobInform(mob,target); //make sure the mob remembers what started the fight
 			mob.getMove();
 		}
 	};
@@ -331,7 +318,7 @@ function Field ()
 				if (toSearch[c1].dist > thisRoom.dist)
 				{
 					//insert it
-					toSearch.splice(c1, 0, thisRoom);
+					toSearch.splice(c1,0,thisRoom);
 					return;
 				}
 			}
@@ -383,7 +370,7 @@ function Field ()
 			'cost:' : 0,
 			'prev' : [0,0],
 			'coords' :[start[0],start[1]],
-			'dist' : this.pythag(end[0] - start[0], end[1] - start[1])
+			'dist' : Math.sqrt(Math.pow(end[0]-start[0],2) + Math.pow(end[1]-start[1],2))
 		};
 		rooms[start[0]] = [];
 		rooms[start[0]][start[1]] = firstRoom;
