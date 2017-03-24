@@ -26,6 +26,8 @@ Mob.prototype.currentMoveTime=0;
 
 Mob.prototype.lastHit = ''; //the last move this mob was affected by
 Mob.prototype.lastHitTime = '';
+Mob.prototype.capturePoints = 0;
+Mob.prototype.bindingPoints = 0; //impossible to escape on their own once > 100
 
 Mob.prototype.angleTable = {'1':(0.75 * Math.PI),
 							'2':(0.5 * Math.PI),
@@ -100,6 +102,7 @@ Mob.prototype.endTurn = function ()
 		this.knownMobs[known[c1]]--;
 		if (this.knownMobs[known[c1]] <= 0)delete this.knownMobs[known[c1]];
 	}
+	this.capturePoints = 0;
 };
 //prompted by faction
 Mob.prototype.getMove = function()
@@ -121,11 +124,6 @@ Mob.prototype.getMove = function()
 			this.currentPath = [];//discard path
 			this.getMove(); // try again
 		}
-	}
-	//if player, notifies the controller, otherwise, calls ai
-	if (this.faction == 'player')
-	{
-		
 	}
 	else this.ai();
 };
