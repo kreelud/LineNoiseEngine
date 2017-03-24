@@ -1,6 +1,6 @@
 MobSprites.Sentinel = function (mob)
 {
-	var img = document.createElement('canvas');
+	var img = document.createElement('canvas');  //Does it make sense to create a new canvas/context on every call?
 	img.width = 60;
 	img.height = 45;
 	img.getContext('2d').drawImage(imageCache['basic'],0,45,60,45,0,0,60,45);
