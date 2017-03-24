@@ -149,8 +149,8 @@ function Field ()
 		var circle = Math.PI * 2;
 		var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
 		var fov = mob.fieldOfView / 2;
-		var cw = Math.abs(mob.facingAngle() - angle);
-		var ccw = Math.abs(mob.facingAngle() + circle - angle)
+		var cw = Math.abs(mob.facingAngle - angle);
+		var ccw = Math.abs(mob.facingAngle + circle - angle)
 		
 		if (cw > fov && ccw > fov)
 			return false; //target outside field of view
