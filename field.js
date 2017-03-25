@@ -143,8 +143,8 @@ function Field ()
 		var yDiff = targetY-mob.y;
 		
 		var distance = this.pythag(xDiff, yDiff);
-		if (distance > mob.visionRange)
-			return false; //target too far away to be seen
+		//if (distance > mob.visionRange)
+			//return false; //target too far away to be seen
 		
 		var circle = Math.PI * 2;
 		var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
@@ -156,6 +156,7 @@ function Field ()
 			return false; //target outside field of view
 		
 		//check obstructions
+		
 		if (xDiff == 0)
 		{
 			var ystart = Math.min(mob.y,targetY);
@@ -165,6 +166,7 @@ function Field ()
 					return false; //obstruction in the way of target
 			}
 		}
+		
 		else
 		{
 			var slope = yDiff/xDiff;
@@ -172,19 +174,23 @@ function Field ()
 			
 			//y = (slope * x) + yIntercept
 			var xstart = Math.min(mob.x,targetX);
+			
 			for (var xcount=0;xcount<Math.abs(xDiff);xcount++)
 			{
 				var matchingY = (slope * (xstart+xcount)) + yIntercept;
-				if (this.tileOpaque(xstart+xcount,Math.floor(matchingY)))return false;
+				//if (targetX==4 && targetY == 3)console.log([xstart+xcount,matchingY,this.tileOpaque(xstart+xcount,Math.floor(matchingY)),this.tileOpaque(xstart+xcount,Math.round(matchingY))]);
+				//if (this.tileOpaque(xstart+xcount,Math.floor(matchingY)))return false;
 				if (this.tileOpaque(xstart+xcount,Math.round(matchingY)))return false; //todo, if .0 check both
 				//if (matchingY == Math.floor(matchingY) && this.tileOpaque(xstart+xcount,matchingY-1))return false; //if the line hits a corner, check both?
 			}
 			//x = (y-yIntercept)/slope
 			var ystart = Math.min(mob.y,targetY);
+			
 			for (var ycount=0;ycount<Math.abs(yDiff);ycount++)
 			{
 				var matchingX = (ystart+ycount - yIntercept) / slope;
-				if (this.tileOpaque(Math.floor(matchingX),ystart+ycount))return false;
+				//if (targetX==4 && targetY == 3)console.log([matchingX,ystart+ycount,this.tileOpaque(Math.floor(matchingX),ystart+ycount),this.tileOpaque(Math.round(matchingX),ystart+ycount)]);
+				//if (this.tileOpaque(Math.floor(matchingX),ystart+ycount))return false;
 				if (this.tileOpaque(Math.round(matchingX),ystart+ycount))return false;
 			}
 		}
