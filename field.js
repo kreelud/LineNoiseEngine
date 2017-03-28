@@ -323,8 +323,9 @@ function Field ()
 		var event = this.storyScript.shift();
 		event.mob.forceMove(event.move,event.text);
 	};
-	this.astar = function (start,end) //returns an array representing a path between start and end, or false on failure
+	this.astar = function (start,end,mob) //returns an array representing a path between start and end, or false on failure
 	{
+		
 		if (this.tileImpassable(end[0],end[1]))
 			return false;
 		
@@ -353,7 +354,7 @@ function Field ()
 			{
 				var exit = [potentialExits[c1][0]+thisRoom.coords[0],potentialExits[c1][1]+thisRoom.coords[1]];
 				//if exit is impassible, continue
-				if (this.tileImpassable(exit[0],exit[1]))continue;
+				if (this.tileImpassable(exit[0],exit[1],mob))continue;
 				//if the room is already known
 				if (rooms[exit[0]] && rooms[exit[0]][exit[1]])
 				{

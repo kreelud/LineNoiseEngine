@@ -28,6 +28,7 @@ Mob.prototype.lastHit = ''; //the last move this mob was affected by
 Mob.prototype.lastHitTime = '';
 Mob.prototype.capturePoints = 0;
 Mob.prototype.bindingPoints = 0; //impossible to escape on their own once > 100
+Mob.prototype.hitPoints = 10;
 
 Mob.prototype.angleTable = {'1':(0.75 * Math.PI),
 							'2':(0.5 * Math.PI),
@@ -102,6 +103,12 @@ Mob.prototype.endTurn = function ()
 	}
 	this.capturePoints = 0;
 };
+Mob.prototype.discardPath = function ()
+{
+	this.currentPath = [];
+	this.plannedMove = "";
+	this.plannedMoveTarget = null;
+};
 //prompted by faction
 Mob.prototype.getMove = function()
 {
@@ -119,7 +126,7 @@ Mob.prototype.getMove = function()
 		}
 		else //path is blocked
 		{
-			this.currentPath = [];//discard path
+			this.discardPath();//discard path
 			this.getMove(); // try again
 		}
 	}
