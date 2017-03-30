@@ -87,7 +87,7 @@ function Field ()
 			active[c1].refresh();
 		}
 		active[0].getMove();
-		if (this.activeFaction=='player')this.activePlayerCharacter = this.factions['player'][0];
+		if (fact[this.activeFaction]=='player')this.activePlayerCharacter = this.factions['player'][0];
 		else this.activePlayerCharacter = null;
 	};
 	this.mobAnimationComplete = function (mob) //called when a mob finishes animating
@@ -126,7 +126,7 @@ function Field ()
 				{
 					if (!faction[c1].attackedThisTurn)  //attackedThisTurn should be true if the mob's turn is over
 					{
-						if(mob.faction=='player')this.activePlayerCharacter=mob;
+						if(faction[c1].faction=='player')this.activePlayerCharacter=faction[c1];
 						faction[c1].getMove();
 						idleFound = true;
 						break;
@@ -290,9 +290,7 @@ function Field ()
 			return; //prevent recursion
 		
 		this.mode = 'combat';
-		console.log('combat');
 		this.clearMobPerception();
-		
 		if (activeMob == null)this.cycleActiveFaction();
 		else
 		{
@@ -310,6 +308,7 @@ function Field ()
 			{
 				active[c1].refresh();
 			}
+			active[0].getMove();
 		}
 	};
 	this.modeStory = function (script)

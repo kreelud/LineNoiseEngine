@@ -46,7 +46,6 @@ function PlayfieldGraphic (map)
 		{
 			this.camera.x = Math.max(Math.min(evt.canvasX - this.width/2,this.map.tilewidth*this.map.width-this.width),0);
 			this.camera.y = Math.max(Math.min(evt.canvasY - this.height/2,this.map.tileheight*this.map.height-this.height),0);
-			console.log([this.camera.x,this.camera.y]);
 			return;
 		}
 		

@@ -169,12 +169,22 @@ Mob.prototype.forceMove = function(move,target=[0,0],text='')
 		this.currentPath = path;
 		this.getMove(); //this should automatically start walking the path
 	}
-	else if (window.Attacks[move](this, target, this.field))
+	else
 	{
-		this.currentMove = move;
+		this.performMove(move, target);
+	}
+};
+
+Mob.prototype.performMove = function (attack,target)
+{
+	if (window.Attacks[attack] && window.Attacks[attack](this, target, this.field))
+	{
+		this.currentMove = attack;
 		this.currentMoveTarget = target;
 		this.currentMoveTime = Date.now();
+		return true;
 	}
+	return false;
 };
 
 Mob.prototype.openSquare = function(x,y)

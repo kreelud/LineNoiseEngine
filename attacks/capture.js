@@ -1,5 +1,6 @@
 window.Attacks['capture'] = function (actor,target,field)
 {
+	
 	if (target.bindingPoints > 0)
 	{
 		target.bindingPoints += 20;

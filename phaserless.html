@@ -5,11 +5,13 @@
 		<script src='playfieldgraphic.js'></script>
 		<script src='attack.js'></script>
 		<script src='attacks/walk.js'></script>
+		<script src='attacks/wait.js'></script>
 		<script src='mob.js'></script>
 		<script src='mobsprite.js'></script>
 		<script src='mobs/testmob.js'></script>
 		<script src='mobsprites/testsprite.js'></script>
 		<script src='mobs/guard.js'></script>
+		<script src='mobs/brawler.js'></script>
 		<script src='mobs/sentinel.js'></script>
 		<script src='mobsprites/sentinel.js'></script>
 		<script src='assets/test.json'></script>
@@ -137,7 +139,7 @@
 				{
 					//space
 					case 32:
-					map.playerAbility = 'end_turn';
+					map.playerAbility = 'wait';
 					break;
 					//1
 					case 49:
@@ -166,13 +168,13 @@
 				newmob.name = 'protag';
 				map.field.addMob(newmob);
 				
-				var sentinel = new Sentinel(5, 5, "enemy");
+				var sentinel = new Brawler(5, 5, "enemy");
 				sentinel.facing = 6;
 				sentinel.name = 'senti';
 
 				map.field.addMob(sentinel);
 				console.log (map.field.tileVisible(sentinel,6,5));
-				map.field.modePeaceful(newmob);
+				map.field.modeCombat(newmob);
 				
 				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};
 			}
