@@ -255,6 +255,8 @@ function PlayfieldGraphic (map)
 					mobs[c1].animationComplete();
 					this.refreshUI();
 				}
+				if (graphic.xOffset == null)graphic.xOffset = 0;
+				if (graphic.yOffset == null)graphic.yOffset = 0;
 				output.getContext('2d').drawImage
 				(
 					graphic.img,
@@ -262,8 +264,8 @@ function PlayfieldGraphic (map)
 					0,
 					graphic.img.width,
 					graphic.img.height,
-					graphic.x * this.map.tilewidth-this.camera.x,
-					graphic.y * this.map.tileheight -this.camera.y,
+					graphic.x * this.map.tilewidth-this.camera.x+graphic.xOffset,
+					graphic.y * this.map.tileheight -this.camera.y+graphic.yOffset,
 					graphic.img.width,
 					graphic.img.height
 				);

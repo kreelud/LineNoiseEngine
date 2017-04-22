@@ -13,6 +13,7 @@
 		<script src='mobs/guard.js'></script>
 		<script src='mobs/brawler.js'></script>
 		<script src='mobs/sentinel.js'></script>
+		<script src='mobsprites/protest.js'></script>
 		<script src='mobsprites/sentinel.js'></script>
 		<script src='assets/test.json'></script>
 		<script src='assets/test.json'></script>
@@ -27,11 +28,18 @@
 				this.remaining = stack.length; //the number of images yet to be loaded
 				
 				var loader = this;
-				var decr = function()
+				this.decr = function()
 				{
-					loader.remaining--;
-					if (loader.remaining <=0)
-						loader.callback();
+					this.remaining--;
+					if (this.remaining <=0)
+					{
+						this.callback();
+						//dunno why this keeps going past zero, but disabling the callback is a quick fix
+						this.callback = function ()
+						{
+							
+						};
+					}
 				};
 				for (var c1=0;c1<stack.length;c1++)
 				{
@@ -43,10 +51,11 @@
 					}
 					
 					imageCache[pic.label]=document.createElement('img');
-					imageCache[pic.label].onload = decr;
+					imageCache[pic.label].onload = this.decr.bind(this);
 					imageCache[pic.label].src = pic.src;
+					
 					if (imageCache[pic.label].complete)
-						decr();
+						this.decr();
 				}
 			}
 			function pulse ()
@@ -129,12 +138,12 @@
 				document.getElementById('gameScreen').onclick=screenclick;
 				document.getElementById('gameScreen').onmousemove=screenclick;
 				document.addEventListener('keydown',keydown);
+				new ImageLoader (MobSpritePreloadStack,test);
 			}
 			var map = new PlayfieldGraphic(mapdata);
 			
 			function keydown (evt)
 			{
-				console.log(evt.keyCode);
 				switch (evt.keyCode)
 				{
 					//space
@@ -158,29 +167,27 @@
 					break;
 				}
 				map.refreshUI();
-				console.log(map.playerAbility);
 			}
 			function test ()
 			{
-				begin();
-					
 				var newmob = new TestMob(1, 1, "player");
 				newmob.name = 'protag';
+				newmob.img = MobSprites.Protest.bind(sentinel);
 				map.field.addMob(newmob);
 				
 				var sentinel = new Brawler(5, 5, "enemy");
-				sentinel.facing = 6;
+				sentinel.facing = 8;
 				sentinel.name = 'senti';
+				sentinel.img = MobSprites.Protest.bind(sentinel);
 
 				map.field.addMob(sentinel);
-				console.log (map.field.tileVisible(sentinel,6,5));
 				map.field.modeCombat(newmob);
 				
 				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};
 			}
 		</script>
 	</head>
-	<body onload='test();'>
+	<body onload='begin();'>
 		<canvas width=1280 height=960 id='gameScreen' onclick='screenclick'></canvas>
 	</body>
 </html>

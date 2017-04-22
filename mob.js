@@ -18,6 +18,7 @@ Mob.prototype.remainingMoves = 5;
 Mob.prototype.attackedThisTurn = false;
 Mob.prototype.animationQueue=[];
 Mob.prototype.animationStart = 0;
+Mob.prototype.aniOffset = Math.round(Math.random() * 10000); //used for blinking currently, so they don't all blink simultaneously
 Mob.prototype.status = "ok";
 Mob.prototype.currentPath = []; //if the mob has a path, it will follow it when prompted to move.
 
@@ -56,7 +57,7 @@ Mob.prototype.faceTile = function (x,y)
 	var yDiff = y - this.y;
 		
 	var circle = Math.PI * 2;
-	var angle = (Math.atan2(yDiff, xDiff) + circle) % circle;
+	var angle = (circle - Math.atan2(yDiff, xDiff) + circle) % circle;
 	//round to the nearest 0.25 * Math.PI
 	//Math.round(angle / (0.25 * Math.PI)) * (0.25 * Math.PI); <-feels like this approach risks rounding errors
 	

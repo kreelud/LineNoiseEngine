@@ -1,4 +1,5 @@
 var MobSprites = {};
+var MobSpritePreloadStack = [];
 
 MobSprites.MobSprite = function (mob)
 {

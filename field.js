@@ -48,6 +48,7 @@ function Field ()
 		for (var c1=0;c1<fac.length;c1++)
 		{
 			var facname = fac[c1];
+			
 			for (var c2=0;c2<this.factions[facname].length;c2++)
 			{
 				output.push(this.factions[facname][c2]);

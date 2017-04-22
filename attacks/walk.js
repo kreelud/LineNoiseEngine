@@ -7,6 +7,7 @@ window.Attacks['walk'] = function (mob,target,field)
 	if (Math.round(Math.sqrt(Math.pow(target[0]-mob.x,2)+Math.pow(target[1]-mob.y,2)))!=1)return false;
 	if (mob.remainingMoves<1)return false;
 	//make the move
+	mob.lastTile = [mob.x,mob.y];
 	mob.currentMove = 'walk';
 	mob.currentMoveTime = Date.now();
 	mob.x = target[0];
