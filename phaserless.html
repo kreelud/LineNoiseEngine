@@ -61,38 +61,22 @@
 			function pulse ()
 			{
 				var sprites = Object.keys(spriteStack);
-				sprites.sort(function (a,b)
-				{
-					return spriteStack[a].z - spriteStack[b].z;
-				});//put sprites in z order
-				clickboxes=[]; //clear out buffer of click areas
-				var canvas = document.getElementById('gameScreen'); //fetch main canvas
-				var ctx = canvas.getContext('2d');
-				ctx.clearRect(0,0,canvas.width,canvas.height); //clear canvas for redrawing
+				//sprites.sort(function (a,b)
+				//{
+					//return spriteStack[a].z - spriteStack[b].z;
+				//});//put sprites in z order
+				//clickboxes=[]; //clear out buffer of click areas
+				//var canvas = document.getElementById('gameScreen'); //fetch main canvas
+				//var ctx = canvas.getContext('2d');
+				//ctx.clearRect(0,0,canvas.width,canvas.height); //clear canvas for redrawing
 				
 				for (var c1=0;c1<sprites.length;c1++)
 				{
 					var sprite = spriteStack[sprites[c1]];
-					var picture = sprite.img();
-					//record the sprite's hitbox
-					if (sprite.hasOwnProperty('onclick') ||sprite.hasOwnProperty('onmousemove'))
-					{
-						var clickbox = 
-						{
-							'onclick':sprite.onclick,
-							'onmousemove':sprite.onmousemove,
-							'x':sprite.x,
-							'y':sprite.y,
-							'z': sprite.z,
-							'pp':sprite.pp,
-							'img':picture
-						};
-						clickboxes.unshift(clickbox);
-					}
-					//draw the sprite in the correct location
-					ctx.drawImage(picture,sprite.x,sprite.y);
+					sprite.refresh();
 				}
 			}
+			
 			function screenclick (evt)
 			{
 				//evt needs to be adjusted for canvas position
@@ -135,8 +119,7 @@
 			function begin ()
 			{
 				setInterval(pulse,250);
-				document.getElementById('gameScreen').onclick=screenclick;
-				document.getElementById('gameScreen').onmousemove=screenclick;
+
 				document.addEventListener('keydown',keydown);
 				new ImageLoader (MobSpritePreloadStack,test);
 			}
@@ -172,7 +155,7 @@
 			{
 				var newmob = new TestMob(1, 1, "player");
 				newmob.name = 'protag';
-				newmob.img = MobSprites.Protest.bind(sentinel);
+				newmob.img = MobSprites.Protest.bind(newmob);
 				map.field.addMob(newmob);
 				
 				var sentinel = new Brawler(5, 5, "enemy");
@@ -183,11 +166,13 @@
 				map.field.addMob(sentinel);
 				map.field.modeCombat(newmob);
 				
-				spriteStack['map']={'x':0,'y':0,'z':0,'img':map.img.bind(map),'onmousemove':map.onmousemove.bind(map),'onclick':map.onclick.bind(map)};
-			}
+				spriteStack['map']={'html':map.html,'refresh':map.refresh.bind(map)};
+				document.getElementById('gameContainer').appendChild(map.html);
+			}//each sprite an html object?  Yes
 		</script>
 	</head>
 	<body onload='begin();'>
-		<canvas width=1280 height=960 id='gameScreen' onclick='screenclick'></canvas>
+		<div id='gameContainer' width=1280 height=960>
+		</div>
 	</body>
 </html>

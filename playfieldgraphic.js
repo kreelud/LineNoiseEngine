@@ -1,8 +1,20 @@
 function PlayfieldGraphic (map)
 {
-	this.belowMobs = document.createElement('canvas'); //canvas representing all layers below moblayer
-	this.aboveMobs= document.createElement('canvas');
-	this.uiLayer = document.createElement('canvas');//a canvas for walking paths and such
+	this.html = document.createElement('div');
+	
+	var neededCanvas = ['belowMobs','aboveMobs','uiLayer'];
+	var canvasZ = 0;
+	for (var c1=0,len=neededCanvas.length;c1<len;c1++)
+	{
+		this[neededCanvas[c1]] = document.createElement('canvas');
+		this[neededCanvas[c1]].style.position='absolute';
+		this[neededCanvas[c1]].style.zIndex = canvasZ * 10;
+		canvasZ++;
+		this.html.appendChild(this[neededCanvas[c1]]);
+	}
+	
+	this.mobGraphics = {};
+	
 	this.field = new Field({});  //needed to draw mobs in correct place
 	this.camera = {'x':0,'y':0}; //in canvas coordinates
 	this.map = map;
@@ -37,10 +49,13 @@ function PlayfieldGraphic (map)
 	{
 		return [Math.floor((canvasX+this.camera.x)/this.tileWidth),Math.floor((canvasY+this.camera.y)/this.tileHeight)];
 	};
-	this.onclick = function (evt)
+	this.html.onclick = function (evt)
 	{
 		this.refreshUI();
-		var currentTile = this.canvasXYToTile (evt.canvasX,evt.canvasY);
+		var rect = this.html.getBoundingClientRect();
+		evt.canvasX = evt.clientX - this.camera.x;
+		evt.canvasY = evt.clientY - this.camera.y;
+		var currentTile = this.mouseTile;//this.canvasXYToTile (evt.canvasX,evt.canvasY);
 		
 		if (this.playerAbility == 'center')
 		{
@@ -66,11 +81,14 @@ function PlayfieldGraphic (map)
 		{
 			this.field.activePlayerCharacter.forceMove('walk',currentTile,'');
 		}
-	};
+	}.bind(this);
 	this.mouseTile = null;  //the tile that the mouse is hovering over
-	this.onmousemove = function (evt)
+	this.html.onmousemove = function (evt)
 	{
-		var currentTile = this.canvasXYToTile (evt.canvasX,evt.canvasY);
+		var rect = this.html.getBoundingClientRect();
+		
+		var currentTile = this.canvasXYToTile (evt.clientX-rect.left,evt.clientY-rect.top);
+		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)]
 		//adjust cursor, if applicable
 		//set mouseTile.  If it's the player's turn, img will draw the path
 		if (this.mouseTile == null ||this.mouseTile[0] != currentTile[0]||this.mouseTile[1] != currentTile[1])
@@ -79,7 +97,7 @@ function PlayfieldGraphic (map)
 			this.refreshUI();
 		}
 		
-	};
+	}.bind(this);
 	this.refreshUI = function ()
 	{
 		//for now, the only thing here is a player footpath
@@ -103,6 +121,13 @@ function PlayfieldGraphic (map)
 						tiles[c1][1]*this.tileHeight
 					);
 				}
+			}
+			if (this.field.activePlayerCharacter!=null)
+			{
+				//'terminator ui'
+				ctx.font = "Courier";
+				ctx.fillStyle = "green";
+				
 			}
 			if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 			{
@@ -219,82 +244,30 @@ function PlayfieldGraphic (map)
 		this.firstGids[ts.firstgid] = ts; //record this to make tile access easier
 	}
 	new ImageLoader (stack,this.graphicStart.bind(this));
-	this.img = function ()
+	this.refresh = function ()
 	{
-		if (!this.loaded)
-		{
-			return this.belowMobs;
-		}
-		
-		var output = document.createElement('canvas');
-		output.width = this.width;
-		output.height = this.height;
-		output.getContext('2d').drawImage
-		(
-			this.belowMobs,
-			this.camera.x,
-			this.camera.y,
-			this.width,
-			this.height,
-			0,
-			0,
-			this.width,
-			this.height
-		);
 		//mobs
 		var mobs = this.field.getMobs();
 		for (var c1=0;c1<mobs.length;c1++)
 		{
+			if (!this.mobGraphics[mobs[c1].mobId])this.mobGraphics[mobs[c1].mobId] = {};
+			var mobCache = this.mobGraphics[mobs[c1].mobId];
 			//TODO: fog of war
-			var graphics = mobs[c1].img(mobs[c1]);
-			for (var c2=0;c2<graphics.length;c2++)
+			if (!mobCache)this.mobGraphics[mobs[c1].mobId] = {};
+			mobs[c1].img(mobCache);
+			var cacheContents = Object.keys(mobCache);
+			for (var c2=0,len=cacheContents.length;c2<len;c2++)
 			{
-				var graphic = graphics[c2];
-				if (graphic.ac)
+				var cont = mobCache[cacheContents[c2]];
+				if (!cont.appended)
 				{
-					mobs[c1].animationComplete();
-					this.refreshUI();
+					this.html.appendChild(cont);
+					cont.appended = true;
 				}
-				if (graphic.xOffset == null)graphic.xOffset = 0;
-				if (graphic.yOffset == null)graphic.yOffset = 0;
-				output.getContext('2d').drawImage
-				(
-					graphic.img,
-					0,
-					0,
-					graphic.img.width,
-					graphic.img.height,
-					graphic.x * this.map.tilewidth-this.camera.x+graphic.xOffset,
-					graphic.y * this.map.tileheight -this.camera.y+graphic.yOffset,
-					graphic.img.width,
-					graphic.img.height
-				);
+				cont.style.left = cont.xPos * this.map.tilewidth + cont.xOffset - this.camera['x'];
+				cont.style.top = cont.yPos * this.map.tileheight + cont.yOffset - this.camera['y'];
 			}
 		}
-		output.getContext('2d').drawImage
-		(
-			this.aboveMobs,
-			this.camera.x,
-			this.camera.y,
-			this.width,
-			this.height,
-			0,
-			0,
-			this.width,
-			this.height
-		);
-		output.getContext('2d').drawImage
-		(
-			this.uiLayer,
-			this.camera.x,
-			this.camera.y,
-			this.width,
-			this.height,
-			0,
-			0,
-			this.width,
-			this.height
-		);
-		return output;
+		
 	};
 }

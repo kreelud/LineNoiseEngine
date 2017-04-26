@@ -23,42 +23,55 @@
 	}
 }());//putting this in a function to avoid taking up global var names
 
-MobSprites.Protest = function (mob)
+MobSprites.Protest = function (mobCache)
 {
+
+	if (!mobCache.mainSprite)
+	{
+		mobCache.mainSprite = document.createElement('img');
+		mobCache.mainSprite.style.position='absolute';
+		mobCache.mainSprite.style.zIndex = 15 + this.y / this.field.grid[0].length;
+	}
+	mobCache.mainSprite.xOffset= -72;
+	mobCache.mainSprite.yOffset= -115;
+	mobCache.mainSprite.xPos = this.x;
+	mobCache.mainSprite.yPos = this.y;
+	
+	//I guess the best way to do it is still to let playfieldgraphic figure out the exact positioning
+	
 	var blinking = 'open';
 	var time = Date.now();
-	var xOffset = -72;
-	var yOffset = -115;
 	
-	var blinkCyclePoint = (time - mob.aniOffset) % 10000;
-	if (blinkCyclePoint < 1000)
+	var blinkCyclePoint = (time - this.aniOffset) % 5000;
+	if (blinkCyclePoint < 500)
 	{
 		blinking = 'blink';
 	}
-	var animationComplete = false;
-	var img = imageCache['protest_'+blinking+'_'+mob.facing+'_stand'];
-	if (mob.currentMove=='walk')
+
+	var src = 'assets/protest/'+blinking+'/'+this.facing+'/stand.png';
+	if (this.currentMove=='walk')
 	{
-		var walkCycleCompletion = (time - mob.currentMoveTime) / 700;
+		var walkCycleCompletion = (time - this.currentMoveTime) / 500;
 		if (walkCycleCompletion >= 1)
 		{
-			animationComplete = true;
+			this.animationComplete();
+			console.log('ac');
 		}
 		else
 		{
-			var walkCyclePoint = Math.round((time - mob.aniOffset) / 500) % 2; //which frame for to play
-			var previous = mob.lastTile;
-			var currentX = (mob.x-previous[0]) * walkCycleCompletion + previous[0];
-			var currentY = (mob.y- previous[1])* walkCycleCompletion + previous[1];
-			var img = imageCache['protest_'+blinking+'_'+mob.facing+'_walk'+(walkCyclePoint+1)];
-			return[{'x':currentX,'y':currentY,'xOffset':xOffset,'yOffset':yOffset,'img':img,'ac':animationComplete}];
+			var walkCyclePoint = Math.round((time - this.aniOffset) / 250) % 2; //which frame for to play
+			var previous = this.lastTile;
+			var currentX = (this.x-previous[0]) * walkCycleCompletion + previous[0];
+			var currentY = (this.y- previous[1])* walkCycleCompletion + previous[1];
+			src = 'assets/protest/'+blinking+'/'+this.facing+'/walk'+(walkCyclePoint+1)+'.png';
+			mobCache.mainSprite.xPos = currentX;
+			mobCache.mainSprite.yPos = currentY;
 		}
 	}
-	else if (mob.currentMove=='punch')
+	else if (this.currentMove=='punch')
 	{
 		
 	}
-	
-	if (mob.currentMove!='')animationComplete = true;
-	return[{'x':mob.x,'y':mob.y,'xOffset':xOffset,'yOffset':yOffset,'img':img,'ac':animationComplete}];
+	else if (this.currentMove!='')this.animationComplete();
+	mobCache.mainSprite.src = src;
 }

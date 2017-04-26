@@ -1,9 +1,13 @@
+var MobID = 0;
+
 // Abstract class
 function Mob (x, y, faction)
 {
 	this.x = x;
 	this.y = y;
 	this.faction = faction;
+	this.mobId = MobID;
+	MobID++;
 }
 
 Mob.prototype.name = "mob";
@@ -133,7 +137,6 @@ Mob.prototype.getMove = function()
 	}
 	else this.ai();
 };
-
 Mob.prototype.ai = function() 
 {
 	
