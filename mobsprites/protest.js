@@ -30,12 +30,19 @@ MobSprites.Protest = function (mobCache)
 	{
 		mobCache.mainSprite = document.createElement('img');
 		mobCache.mainSprite.style.position='absolute';
-		mobCache.mainSprite.style.zIndex = 15 + this.y / this.field.grid[0].length;
+		
 	}
-	mobCache.mainSprite.xOffset= -72;
-	mobCache.mainSprite.yOffset= -115;
+	mobCache.mainSprite.xOffset= -72 * config.scale;
+	mobCache.mainSprite.yOffset= -115* config.scale;
 	mobCache.mainSprite.xPos = this.x;
 	mobCache.mainSprite.yPos = this.y;
+	mobCache.mainSprite.style.zIndex = (1500 + Math.round((this.y / this.field.grid[0].length) * 200));
+	mobCache.mainSprite.onload = function (evt)
+	{
+		var nWidth = evt.target.naturalWidth;
+		evt.target.width = nWidth * config.scale;
+		mobCache.mainSprite.xOffset += nWidth - (nWidth * config.scale);
+	}.bind(mobCache);
 	
 	//I guess the best way to do it is still to let playfieldgraphic figure out the exact positioning
 	
@@ -49,13 +56,16 @@ MobSprites.Protest = function (mobCache)
 	}
 
 	var src = 'assets/protest/'+blinking+'/'+this.facing+'/stand.png';
-	if (this.currentMove=='walk')
+	if (this.bindingPoints > 0)
+	{
+		src = 'assets/protest/'+blinking+'/'+this.facing+'/kneebound.png';
+	}
+	else if (this.currentMove=='walk')
 	{
 		var walkCycleCompletion = (time - this.currentMoveTime) / 500;
 		if (walkCycleCompletion >= 1)
 		{
 			this.animationComplete();
-			console.log('ac');
 		}
 		else
 		{

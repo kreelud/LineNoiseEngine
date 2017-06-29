@@ -1,0 +1,238 @@
+function StartMenu ()
+{
+	
+	this.html = document.createElement('div');
+	this.html.style.position = 'absolute';
+	this.html.style.backgroundColor = 'rgba(0,0,0,0.5)';
+	this.html.style.width = '100%';
+	this.html.style.height = '100%';
+	
+	this.contentWindow = document.createElement('div');
+	this.contentWindow.style.backgroundColor = 'white';
+	this.contentWindow.style.width = '75%';
+	this.contentWindow.style.height = '100%';
+	this.contentWindow.style.margin = '0% auto';
+	this.contentWindow.style.overflowY = 'scroll';
+	this.contentWindow.onclick = function (evt){evt.stopPropagation();};
+	this.html.appendChild(this.contentWindow);
+	
+	this.screens = [];
+	var screenNames = ['stage0','newgame_basic'];
+	for (var c1=0,len=screenNames.length;c1<len;c1++)
+	{
+		var name = screenNames[c1];
+		this.screens[name] = document.createElement('div');
+		this.screens[name].style.display = 'none';
+		this.contentWindow.appendChild(this.screens[name]);
+	}
+	this.screens.stage0.style.display = 'inline';
+	this.screens.stage0.style.textAlign = 'center';
+	this.screens.stage0.innerHTML = "<h1>Line Noise</h1>";
+	//stage 1
+	var stage0Buttons = ['new game','load game','credits'];
+	this.buttons = [];
+	for (var c1=0,len=stage0Buttons.length;c1<len;c1++)
+	{
+		var name = stage0Buttons[c1];
+		this.buttons[name] = document.createElement('button');
+		this.buttons[name].innerHTML = name;
+		var container = document.createElement('div');
+		container.appendChild(this.buttons[name]);
+		this.screens['stage0'].appendChild(container);
+	}
+	this.buttons['new game'].onclick = function ()
+	{
+		//hide all screens, show newgame_basic
+		var scr = Object.keys(this.screens);
+		for (var c1=0,len=scr.length;c1<len;c1++)
+		{
+			this.screens[scr[c1]].style.display='none';
+		}
+		this.screens.newgame_basic.style.display = 'inline';
+	}.bind(this);
+	//newgame_basic (character creation)
+	//needs: char name, char gender, game mode, backgrounds.
+	
+	
+	var nameBox = document.createElement('div');
+	var genderRadioBox = document.createElement('div');
+	var gameModeRadioBox = document.createElement('div');
+	var backgroundCheckBox = document.createElement('div');
+	var continueButtonBox = document.createElement('div');
+	var continueButton = document.createElement('button');
+	continueButton.innerHTML = 'continue';
+	
+	this.screens['newgame_basic'].innerHTML += "<h2>Create a character</h2>";
+	this.screens['newgame_basic'].innerHTML += "<div>Name:</div>";
+	this.screens['newgame_basic'].appendChild(nameBox);
+	this.screens['newgame_basic'].appendChild(document.createElement('br'));
+	var label = document.createElement('div')
+	this.screens['newgame_basic'].appendChild(label);
+	label.innerHTML = 'Gender (not implemented):';
+	this.screens['newgame_basic'].appendChild(genderRadioBox);
+	this.screens['newgame_basic'].appendChild(document.createElement('br'));
+	label = document.createElement('div')
+	this.screens['newgame_basic'].appendChild(label);
+	label.innerHTML = 'Game Mode (not implemented):';
+	this.screens['newgame_basic'].appendChild(gameModeRadioBox);
+	this.screens['newgame_basic'].appendChild(document.createElement('br'));
+	label = document.createElement('div')
+	this.screens['newgame_basic'].appendChild(label);
+	label.innerHTML = 'Background:';
+	this.screens['newgame_basic'].appendChild(backgroundCheckBox);
+	this.screens['newgame_basic'].appendChild(document.createElement('br'));
+	this.screens['newgame_basic'].appendChild(continueButtonBox);
+	this.screens.newgame_basic.radios = [];
+	
+	this.screens['newgame_basic'].nameEnter = document.createElement('input');
+	this.screens['newgame_basic'].nameEnter.type = 'text';//this.screens['newgame_basic'].nameEnter.setAttribute("type", "text");
+	nameBox.appendChild(this.screens['newgame_basic'].nameEnter);
+	
+	var gameModes = ['Both','GID','DID'];
+	for (var c1=0,len=gameModes.length;c1<len;c1++)
+	{
+		var mode = gameModes[c1];
+		gameModeRadioBox.innerHTML += mode;
+		var newRadio = document.createElement('input');
+		newRadio.type = 'radio';
+		newRadio.name = 'game_mode';
+		newRadio.value = mode;
+		gameModeRadioBox.appendChild(newRadio);
+		this.screens.newgame_basic.radios.push(newRadio);
+	}
+	
+	var sex = ['Male','Female'];
+	for (var c1=0,len=sex.length;c1<len;c1++)
+	{
+		genderRadioBox.innerHTML += sex[c1];
+		var newRadio = document.createElement('input');
+		newRadio.type = 'radio';
+		newRadio.name = 'sex';
+		newRadio.value = sex[c1];
+		genderRadioBox.appendChild(newRadio);
+		this.screens.newgame_basic.radios.push(newRadio);
+	}
+	
+	var bckgrnds = Object.keys(TextBank.words.backgrounds);
+	backgroundCheckBox.style.height = '60%';
+	backgroundCheckBox.style.overflow = 'auto';
+	var backgroundTable = document.createElement('table');
+	backgroundTable.style.borderCollapse = 'collapse';
+	backgroundCheckBox.appendChild(backgroundTable);
+	console.log(bckgrnds);
+	for (var c1=0,len=bckgrnds.length;c1<len;c1++)
+	{
+		var bck = bckgrnds[c1];
+		var newRow = document.createElement('tr');
+		backgroundTable.appendChild(newRow);
+		var checkCell = document.createElement('td');
+		var nameCell = document.createElement('td');
+		var descCell = document.createElement('td');
+		newRow.appendChild(checkCell);
+		newRow.appendChild(nameCell);
+		newRow.appendChild(descCell);
+		checkCell.style.border = '1px solid black';
+		nameCell.style.border = '1px solid black';
+		descCell.style.border = '1px solid black';
+		
+		nameCell.innerHTML = TextBank.words.backgrounds[bck];
+		descCell.innerHTML = TextBank.words.backgrounds_desc[bck];
+		
+		var check = document.createElement('input');
+		check.type = 'checkbox';
+		check.name = 'background_check';
+		check.value = bck;
+		check.onchange =function (evt)
+		{
+			var checks = document.getElementsByName('background_check');
+			var checkedCount = 0;
+			
+			for (var c1=0,len=checks.length;c1<len;c1++)
+			{
+				checks[c1].disabled = false;
+				if (checks[c1].checked)checkedCount++;
+				if (checkedCount>=2)
+				{
+					for (var c2=0,len2=checks.length;c2<len2;c2++)
+					{
+						if (!checks[c2].checked)checks[c2].disabled = true;
+					}
+					break;
+				}
+			}
+		};
+		checkCell.append(check);
+	}
+	//continueButton.style.position = 'absolute';
+	continueButton.style.float = 'right';
+	continueButtonBox.appendChild(continueButton);
+	continueButton.onclick = function ()
+	{
+		this.newgame();
+	}.bind(this);
+}
+
+StartMenu.prototype.newgame = function ()
+{
+	//parse all the menus
+	var choices = {};
+	choices.name = this.screens['newgame_basic'].nameEnter.value;
+	var genderChecks = document.getElementsByName('sex');
+	for (var c1=0,len=genderChecks.length;c1<len;c1++)
+	{
+		if (genderChecks[c1].checked)
+		{
+			choices.gender = genderChecks[c1].value;
+		}
+		break;
+	}
+	var gameModeChecks = document.getElementsByName('game_mode');
+	for (var c1=0,len=gameModeChecks.length;c1<len;c1++)
+	{
+		if (gameModeChecks[c1].checked)
+		{
+			choices.game_mode = gameModeChecks[c1].value;
+		}
+		break;
+	}
+	var backgroundChecks = document.getElementsByName('background_check');
+	var found1 = false;
+	choices.backgrounds = [];
+	for (var c1=0,len=backgroundChecks.length;c1<len;c1++)
+	{
+		if (backgroundChecks[c1].checked)
+		{
+			choices.backgrounds.push(backgroundChecks[c1].value);
+			if (choices.backgrounds.length>=2)break;
+		}
+	}
+	//check them
+	if (!choices.name)
+	{
+		alert("Please enter a name!");
+		return;
+	}
+	if (!choices.gender)choices.gender = 'female';
+	if (!choices.game_mode)choices.game_mode = 'Both';
+	if (choices.backgrounds.length!=2)
+	{
+		alert("Please choose 2 backgrounds!");
+		return;
+	}
+	//save them to character sheet
+	characterSheet = new CharacterSheet();
+	characterSheet.characterInfo =
+	characterInfo =
+	{
+		'name' : choice.name,
+		'backgrounds' : choices.backgrounds,
+		'level' : 1,
+		'str' : 5,
+		'agi' : 5,
+		'int' : 5,
+		'cha' : 5,
+		'xtra' : 5,
+		'inventory': []
+	};
+	//load the map
+}

@@ -15,11 +15,16 @@ function Field ()
 	this.activeMob = 0; //only meaningful in combat
 	this.storyScript = [];
 	this.activePlayerCharacter = null;
+	this.lastMover = null;
+	this.modAniCallback = function (){};
 	
-	//a callback to notify PlayfieldGraphic that the active character has changed, so that the camera can be recentered
-	this.newActive = function ()
+	this.getActiveId = function ()
 	{
-		
+		if (this.mode == 'combat')
+		{
+			return this.lastMover.id;
+		}
+		else return this.activePlayerCharacter;
 	}
 	//add characters
 	//character sight
@@ -88,11 +93,13 @@ function Field ()
 			active[c1].refresh();
 		}
 		active[0].getMove();
+		this.lastMover = active[0];
 		if (fact[this.activeFaction]=='player')this.activePlayerCharacter = this.factions['player'][0];
 		else this.activePlayerCharacter = null;
 	};
 	this.mobAnimationComplete = function (mob) //called when a mob finishes animating
 	{
+		this.mobAniCallback();
 		if (this.mode == 'peaceful')
 		{
 			mob.refresh();
@@ -118,7 +125,11 @@ function Field ()
 		}
 		else if (this.mode =='combat')
 		{
-			if (!mob.attackedThisTurn)mob.getMove();
+			if (!mob.attackedThisTurn)
+			{
+				mob.getMove();
+				this.lastMover = mob;
+			}
 			else
 			{
 				var faction = this.factions[mob.faction];
@@ -127,8 +138,10 @@ function Field ()
 				{
 					if (!faction[c1].attackedThisTurn)  //attackedThisTurn should be true if the mob's turn is over
 					{
+						//TODO: add flag for non-player active character
 						if(faction[c1].faction=='player')this.activePlayerCharacter=faction[c1];
 						faction[c1].getMove();
+						this.lastMover = faction[c1];
 						idleFound = true;
 						break;
 					}
@@ -137,8 +150,10 @@ function Field ()
 			}
 		}
 	};
-	this.tileVisible = function (mob,targetX,targetY)
+	this.tileVisible = function (mob,targetX,targetY,test)
 	{
+		if (this.tileOpaque(targetX,targetY))return false;
+		if (mob.x==targetX&&mob.y==targetY)return false;
 		// What to do here when targets are not set?
 		var xDiff = targetX-mob.x;
 		var yDiff = targetY-mob.y;
@@ -148,14 +163,21 @@ function Field ()
 			//return false; //target too far away to be seen
 		
 		var circle = Math.PI * 2;
-		var angle = (Math.atan2(yDiff,xDiff) + circle) % circle;
+		var angle = (Math.atan2(-yDiff,xDiff) + circle) % circle;
+		
 		var fov = mob.fieldOfView / 2;
+		
 		var cw = Math.abs(mob.facingAngle - angle);
 		var ccw = Math.abs(mob.facingAngle + circle - angle)
 		
+		if(test)
+		{
+			console.log('xdiff: '+xDiff);
+			console.log('ydiff: '+yDiff);
+			console.log('angle: '+angle);
+		}
 		if (cw > fov && ccw > fov)
 			return false; //target outside field of view
-		
 		//check obstructions
 		
 		if (xDiff == 0)
@@ -310,6 +332,7 @@ function Field ()
 				active[c1].refresh();
 			}
 			active[0].getMove();
+			this.lastMover = active[0];
 		}
 	};
 	this.modeStory = function (script)

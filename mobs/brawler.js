@@ -14,6 +14,9 @@ Brawler.prototype.ai = function()
 	var attackValue = 20;
 	var rescueValue = 30;
 	
+	//decide what move to do
+	var adjacents = [];
+	
 	if (this.remainingMoves <= 0)this.performMove('wait',null);//for now, just have it walk at the player
 	
 	var mobs = this.field.getMobs();  //todo: change to known mobs

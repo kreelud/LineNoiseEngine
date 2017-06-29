@@ -1,37 +1,164 @@
 function PlayfieldGraphic (map)
 {
+	this.mapName = 'default';
 	this.html = document.createElement('div');
-	
-	var neededCanvas = ['belowMobs','aboveMobs','uiLayer'];
+	this.html.style['background-color'] = 'black';
+	this.stage = document.createElement('div'); //the part that can be moved around.
+	this.html.style.position = 'absolute';
+	this.html.style.overflow = 'hidden';
+	this.stage.style.position = 'absolute';
+	this.stage.style.zIndex = 0;
+	this.html.appendChild(this.stage);
+
+	var neededCanvas = ['belowMobs','uiLayer','aboveMobs'];
 	var canvasZ = 0;
+	this.map = map;
+	
+	this.modals = {}; //equip, dialog, game, character
+	this.modals['equip'] = new EquipModal(); //triggered by clicking on icon
+	this.modals['dialogue'] = new DialogueModal();  //triggered by story or by interacting with a character.
+	this.modals['game'] = new GameModal(); //save, load, settings.  Gear icon on bottom right
+	this.modals['character'] = new CharacterModal(); //talent tree of active character.  Button on bottom left.
+	
+	var modals = Object.keys(this.modals);
+	for (var c1=0,len=modals.length;c1<len;c1++)
+	{
+		console.log(modals[c1]);
+		this.html.appendChild(this.modals[modals[c1]].html);
+		this.modals[modals[c1]].close();
+	}
+	
+	//placeholder buttons
+	this.equipButton = document.createElement('button');
+	this.centerButton = document.createElement('button');
+	
+	var bLeftPanel = document.createElement('table');
+	this.bLeftPanel= bLeftPanel;
+	bLeftPanel.style.bottom = '0px';
+	bLeftPanel.style.position = 'absolute';
+	bLeftPanel.style.zIndex = 3501;
+	bLeftPanel.onmousemove = function (evt)
+	{
+		evt.stopPropagation();
+	}
+	this.html.appendChild(bLeftPanel);
+	
+	var row1 = document.createElement('tr');
+	row1.appendChild(this.activeCharacterName = document.createElement('td'));
+	row1.appendChild(this.activeCharacterMoves = document.createElement('td'));
+	bLeftPanel.appendChild(row1);
+	
+	this.activeCharacterName.style.color = 'lime';
+	this.activeCharacterMoves.style.color = 'lime';
+	
+	var row2 = document.createElement('tr');
+	var td = document.createElement('td');
+	td.appendChild(this.equipButton);
+	row2.appendChild(td);
+	
+	
+	td = document.createElement('td');
+	td.appendChild(this.centerButton);
+	row2.appendChild(td);
+	
+	bLeftPanel.appendChild(row2);
+	
+	
+	this.equipButton.innerHTML = 'equip';
+	this.centerButton.innerHTML = 'center';
+	
+	this.centerButton.onclick = function (evt) //button only appears in combat mode, so center either on active character, or last move
+	{
+		evt.stopPropagation();
+		this.lastCenteredChar = null;
+	}.bind(this);
+	
+	this.gameButton = document.createElement('button');
+	this.gameButton.innerHTML = 'game';
+	this.gameButton.style.position = 'absolute';
+	this.gameButton.style.right = '0px';
+	this.gameButton.style.bottom = '0px';
+	this.gameButton.style.zIndex = 3501;
+	this.html.appendChild(this.gameButton);
+	
+	this.gameButton.onclick = function (evt)
+	{
+		this.modals['game'].show();
+		evt.stopPropagation();
+	}.bind(this);
+	this.equipButton.onclick = function (evt)
+	{
+		this.modals['equip'].show();
+		evt.stopPropagation();
+	}.bind(this);
+	
+	//end placeholder buttons
+	
+	var mods = Object.keys(this.modals);
+	for (var c1=0,len=mods.len;c1<len;c1++)
+	{
+		this.html.appendChild(this.modals[mods[c1]]);
+	}
+	
+	var w = this.map.tilewidth*this.map.width*config.scale;
+	var h = this.map.tileheight*this.map.height*config.scale;
 	for (var c1=0,len=neededCanvas.length;c1<len;c1++)
 	{
 		this[neededCanvas[c1]] = document.createElement('canvas');
 		this[neededCanvas[c1]].style.position='absolute';
-		this[neededCanvas[c1]].style.zIndex = canvasZ * 10;
+		this[neededCanvas[c1]].style.zIndex = canvasZ * 1000;
+		this[neededCanvas[c1]].style.x = 0;
+		this[neededCanvas[c1]].width = w;
+		this[neededCanvas[c1]].height = h;
 		canvasZ++;
-		this.html.appendChild(this[neededCanvas[c1]]);
+		this.stage.appendChild(this[neededCanvas[c1]]);
 	}
 	
 	this.mobGraphics = {};
 	
 	this.field = new Field({});  //needed to draw mobs in correct place
+	this.field.mobAniCallback = function (){this.refreshUI;}.bind(this);
 	this.camera = {'x':0,'y':0}; //in canvas coordinates
-	this.map = map;
 	this.loaded = false;
 	this.firstGids = {};
-	this.width = 1280;
-	this.height = 640;
-	var cameraPanSpeedMax = 0.5; //pixels per ms
+	this.html.style.width = 1280*config.scale;
+	this.html.style.height = 640*config.scale;
 	
-	var w = this.map.tilewidth*this.map.width;
-	var h = this.map.tileheight*this.map.height;
-	this.belowMobs.width = w;
-	this.belowMobs.height = h;
-	this.aboveMobs.width = w;
-	this.aboveMobs.height = h;
-	this.uiLayer.width = w;
-	this.uiLayer.height = h;
+	this.cameraPanSpeedMax = 3; //pixels per ms
+	this.cameraPanX = 0; //current pan speed
+	this.cameraPanY = 0;
+	this.cameraLastPanUpdate = Date.now();
+	
+	
+	this.arScannerOutput = document.createElement('div');
+	this.arScannerOutput.style.position='absolute';
+	this.arScannerOutput.style.right= 0;
+	this.arScannerOutput.style.zIndex='3500';
+	this.arScannerOutput.style.color = 'lime';
+	this.arScannerOutput.style['font-family'] ='Monospace';
+	this.arScannerOutput.style['font-size'] ='16';
+	this.arScannerOutput.style.whiteSpace = 'pre-wrap';
+	this.arScannerOutput.style.width = "24%";
+	this.arScannerOutput.innerHTML = ( "");
+	this.html.appendChild(this.arScannerOutput);
+	
+	this.arLogOutputFrame = document.createElement('div');
+	this.arLogOutputContent = document.createElement('div');
+	this.arLogOutputFrame.appendChild(this.arLogOutputContent);
+	this.arLogOutputFrame.style.position='absolute';
+	this.arLogOutputContent.style.position='absolute';
+	this.arLogOutputContent.style.bottom=0;
+	this.arLogOutputFrame.style.left= 0;
+	this.arLogOutputFrame.style.overflow= 'hidden';
+	this.arLogOutputFrame.style.zIndex='3500';
+	this.arLogOutputFrame.style.color = 'lime';
+	this.arLogOutputFrame.style['font-family'] ='Monospace';
+	this.arLogOutputFrame.style['font-size'] ='16';
+	this.arLogOutputFrame.style.whiteSpace = 'pre-wrap';
+	this.arLogOutputFrame.style.width = "24%";
+	this.arLogOutputFrame.style.height = "100%";
+	this.arLogOutputContent.innerHTML = '';
+	this.html.appendChild(this.arLogOutputFrame);
 	
 	this.playerAbility = 'walk'; //currently selected ability controlled by the ui
 	//-------------------------------
@@ -41,9 +168,14 @@ function PlayfieldGraphic (map)
 	//ensure map info is present
 	
 	//get map info
-	this.tileHeight = map.tileheight;
-	this.tileWidth = map.tilewidth;
+	this.tileHeight = Math.floor(map.tileheight * config.scale);
+	this.tileWidth = map.tilewidth * config.scale;
 	this.orientation = map.orientation;
+	
+	this.showModal = function (key)
+	{
+		
+	};
 	
 	this.canvasXYToTile = function (canvasX,canvasY)
 	{
@@ -57,10 +189,15 @@ function PlayfieldGraphic (map)
 		evt.canvasY = evt.clientY - this.camera.y;
 		var currentTile = this.mouseTile;//this.canvasXYToTile (evt.canvasX,evt.canvasY);
 		
+		
 		if (this.playerAbility == 'center')
 		{
-			this.camera.x = Math.max(Math.min(evt.canvasX - this.width/2,this.map.tilewidth*this.map.width-this.width),0);
-			this.camera.y = Math.max(Math.min(evt.canvasY - this.height/2,this.map.tileheight*this.map.height-this.height),0);
+			//this.camera.x = Math.max(Math.min(evt.canvasX - this.html.width/2,this.map.tilewidth*this.map.width-this.html.width),0);
+			//this.camera.y = Math.max(Math.min(evt.canvasY - this.html.height/2,this.map.tileheight*this.map.height-this.html.height),0);
+			this.camera.x = this.camera.x +evt.clientX;
+			this.camera.y = this.camera.y + evt.clientY;
+			this.stage.style.left = -this.camera.x;
+			this.stage.style.top = -this.camera.y;
 			return;
 		}
 		
@@ -83,9 +220,23 @@ function PlayfieldGraphic (map)
 		}
 	}.bind(this);
 	this.mouseTile = null;  //the tile that the mouse is hovering over
+	this.html.onmouseout = function (evt)
+	{
+		this.cameraPanX = 0;
+		this.cameraPanY = 0;
+	}.bind(this);
 	this.html.onmousemove = function (evt)
 	{
 		var rect = this.html.getBoundingClientRect();
+		
+		//pan screen
+		var mX = (evt.clientX-rect.left) / rect.width;
+		var mY = (evt.clientY-rect.top) / rect.height;
+		if (mX>0.9)this.cameraPanX = Math.max(this.cameraPanSpeedMax * (mX-0.90),0);
+		else this.cameraPanX = Math.min(-this.cameraPanSpeedMax * (0.10-mX),0);
+		if (mY>0.9)this.cameraPanY = Math.max(this.cameraPanSpeedMax * (mY-0.90),0);
+		else this.cameraPanY = Math.min(-this.cameraPanSpeedMax * (0.10-mY),0);
+		
 		
 		var currentTile = this.canvasXYToTile (evt.clientX-rect.left,evt.clientY-rect.top);
 		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)]
@@ -93,6 +244,7 @@ function PlayfieldGraphic (map)
 		//set mouseTile.  If it's the player's turn, img will draw the path
 		if (this.mouseTile == null ||this.mouseTile[0] != currentTile[0]||this.mouseTile[1] != currentTile[1])
 		{
+			this.arScannerOutput.innerHTML = '';
 			this.mouseTile = currentTile;
 			this.refreshUI();
 		}
@@ -100,18 +252,46 @@ function PlayfieldGraphic (map)
 	}.bind(this);
 	this.refreshUI = function ()
 	{
-		//for now, the only thing here is a player footpath
+		//active character panel
+		if (this.field.activePlayerCharacter != null)
+		{
+			this.bLeftPanel.style.visibility = 'visible';
+			this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
+			this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
+		}
+		else
+		{
+			this.bLeftPanel.style.visibility = 'hidden';
+		}
+		
+		//player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
 		
 		if (this.mouseTile!=null)
 		{
+			
 			var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
 			if (selectedMob)
 			{
+				var textSubs = {};
+				textSubs['$currentTargetName%']=selectedMob.name;
+				textSubs['$currentTargetDisposition%'] = 'friendly';
+				textSubs['$currentTargetAlerted%']= 'false';
+				textSubs['$currentTargetHp%']="<--->";
+				textSubs['$currentTargetStamina%']="<--->";
+				textSubs['$currentTargetStatusEffects%']="<--->";
+				textSubs['$currentTargetDescription%']="This is where rainbows all are dashed";
+				//this.arScannerOutput.innerHTML = (getText('ui_scanner',textSubs));
 				//TODO: Make sure it's known to the player
-				var light = this.getTile(9);
+				var light = document.createElement('canvas');
+				light.width = this.tileWidth;
+				light.height = this.tileHeight;
+				var lightCtx = light.getContext("2d");
+				lightCtx.fillStyle = "#FFFF0088";
+				lightCtx.fillRect(0, 0, light.width, light.height);
 				var tiles = this.field.getVisibleTiles(selectedMob);
+				
 				for (var c1=0,len=tiles.length;c1<len;c1++)
 				{
 					ctx.drawImage
@@ -121,13 +301,6 @@ function PlayfieldGraphic (map)
 						tiles[c1][1]*this.tileHeight
 					);
 				}
-			}
-			if (this.field.activePlayerCharacter!=null)
-			{
-				//'terminator ui'
-				ctx.font = "Courier";
-				ctx.fillStyle = "green";
-				
 			}
 			if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 			{
@@ -230,7 +403,19 @@ function PlayfieldGraphic (map)
 				var tileNum = layer.data[c2];
 				var row = Math.floor(c2 / layer.width);
 				var column = c2 % layer.width;
-				currentCanvas.getContext('2d').drawImage(this.getTile(tileNum),column*this.map.tilewidth,row*this.map.tileheight);
+				var tTile = this.getTile(tileNum);
+				currentCanvas.getContext('2d').drawImage
+				(
+					tTile,
+					0,
+					0,
+					this.map.tilewidth,
+					this.map.tileheight,
+					column*this.tileWidth,
+					row*this.tileHeight,
+					this.tileWidth,
+					this.tileHeight
+				);
 			}
 		}
 		this.loaded = true;
@@ -246,6 +431,35 @@ function PlayfieldGraphic (map)
 	new ImageLoader (stack,this.graphicStart.bind(this));
 	this.refresh = function ()
 	{
+		//camera pan
+		var timePassed = Date.now()- this.cameraLastPanUpdate
+		this.cameraLastPanUpdate += timePassed;
+		this.camera.x += timePassed * this.cameraPanX;
+		this.camera.y += timePassed * this.cameraPanY;
+		
+		
+		if (this.field.mode=='combat'&&this.lastCenteredChar != this.field.lastMover) //if camera move, and the last char centered on wasn't this one, center character
+		{
+			//TODO: add check to make sure mob is known
+			this.camera.x = this.field.lastMover.x * this.tileWidth - (parseInt(this.html.style.width)/2);
+			this.camera.y = this.field.lastMover.y * this.tileHeight - (parseInt(this.html.style.height)/2);
+			this.lastCenteredChar = this.field.lastMover;
+		}
+		this.camera.x = Math.max(Math.min(this.camera.x,this.belowMobs.width - parseInt(this.html.style.width)),0);
+		this.camera.y = Math.max(Math.min(this.camera.y,this.belowMobs.height - parseInt(this.html.style.height)),0);
+		this.stage.style.left = -this.camera.x;
+		this.stage.style.top = -this.camera.y;
+		//active character panel (temporary until update)
+		if (this.field.activePlayerCharacter != null)
+		{
+			this.bLeftPanel.style.visibility = 'visible';
+			this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
+			this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
+		}
+		else
+		{
+			this.bLeftPanel.style.visibility = 'hidden';
+		}
 		//mobs
 		var mobs = this.field.getMobs();
 		for (var c1=0;c1<mobs.length;c1++)
@@ -255,17 +469,26 @@ function PlayfieldGraphic (map)
 			//TODO: fog of war
 			if (!mobCache)this.mobGraphics[mobs[c1].mobId] = {};
 			mobs[c1].img(mobCache);
+			
+			if (mobs[c1].faction=='player')
+			{
+				/*this.camera.x = mobs[c1].x * this.tileWidth - (parseInt(this.html.style.width)/2);
+				this.camera.y = mobs[c1].y * this.tileHeight - (parseInt(this.html.style.height)/2);
+				this.stage.style.left = -this.camera.x;
+				this.stage.style.top = -this.camera.y;*/
+			}
+			
 			var cacheContents = Object.keys(mobCache);
-			for (var c2=0,len=cacheContents.length;c2<len;c2++)
+			for (var c2=0,len2=cacheContents.length;c2<len2;c2++)
 			{
 				var cont = mobCache[cacheContents[c2]];
 				if (!cont.appended)
 				{
-					this.html.appendChild(cont);
+					this.stage.appendChild(cont);
 					cont.appended = true;
 				}
-				cont.style.left = cont.xPos * this.map.tilewidth + cont.xOffset - this.camera['x'];
-				cont.style.top = cont.yPos * this.map.tileheight + cont.yOffset - this.camera['y'];
+				cont.style.left = cont.xPos * this.tileWidth + cont.xOffset; //- this.camera['x'];
+				cont.style.top = cont.yPos * this.tileHeight + cont.yOffset; //- this.camera['y'];//+(this.map.tileheight/2 * config.scale)
 			}
 		}
 		

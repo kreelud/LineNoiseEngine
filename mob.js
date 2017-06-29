@@ -14,7 +14,7 @@ Mob.prototype.name = "mob";
 Mob.prototype.knownMobs = {}; //mob, time
 Mob.prototype.mobMemoryTurns = 3;
 Mob.prototype.mobMemoryTime = 5000;
-Mob.prototype.fieldOfView = (19 * Math.PI) / 30;
+Mob.prototype.fieldOfView = (19 * Math.PI) / 30 * 0.9;
 Mob.prototype.visionRange = 8;
 Mob.prototype.facing = 1; //like a dial pad
 Mob.prototype.movesPerTurn = 5;
@@ -34,6 +34,14 @@ Mob.prototype.lastHitTime = '';
 Mob.prototype.capturePoints = 0;
 Mob.prototype.bindingPoints = 0; //impossible to escape on their own once > 100
 Mob.prototype.hitPoints = 10;
+
+//progression
+Mob.prototype.level = 1;
+Mob.prototype.skills = [];
+Mob.prototype.str = 1;
+Mob.prototype.agi = 1;
+Mob.prototype.int = 1;
+Mob.prototype.cha = 1;
 
 Mob.prototype.angleTable = {'1':(0.75 * Math.PI),
 							'2':(0.5 * Math.PI),
@@ -198,4 +206,32 @@ Mob.prototype.openSquare = function(x,y)
 		   y >= 0 &&                   // y within lower bounds
 		   y < this.field.grid[0] &&   // y within upper bounds
 		   this.field.grid[x][y] == 0; // blocked by obstacle
-}
+};
+
+Mob.prototype.getEquipment = function () //returns a list of valid abilities based on skills and equipment
+{
+	var equipList = [];
+	for (var c1=0;c1<this.skills.length;c1++)
+	{
+		equipList = equipList.concat(SkillTable[this.skills[c1]+'_eq']);
+	}
+	return equipList;
+};
+Mob.prototype.save = function ()
+{
+	//record current hp, x,y facing,all stats and skills, status effects
+	var output =
+	{
+		'hp' : this.hitPoints,
+		'x' : this.x,
+		'y' : this.y,
+		'facing' : this.facing,
+		'str' : this.str,
+		'agi' : this.agi,
+		'int' : this.int,
+		'cha' : this.cha,
+		'skills' : this.skills,
+		
+	};
+	return output;
+};

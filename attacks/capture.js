@@ -30,9 +30,13 @@ window.Attacks['capture'] = function (actor,target,field)
 			target.capturePoints += 8 * sneakBonus;
 			break;
 		}
-		if (target.capturePoints >= 12)
+		if (target.bindingPoints > 0)
 		{
 			target.bindingPoints += 20;
+		}
+		else if (target.capturePoints >= 12)
+		{
+			target.bindingPoints = 10;
 			target.currentMove = 'captured';
 			target.currentMoveTime = Date.now();
 		}
