@@ -7,16 +7,21 @@ function Mob (x, y, faction)
 	this.y = y;
 	this.faction = faction;
 	this.mobId = MobID;
+	this.facing = Math.floor(Math.random() * 8) + 1;
+	if (this.facing = 5)this.facing = 9;//like a dial pad
 	MobID++;
 }
+window.MobLib = {};
+MobLib['Mob'] = Mob;
 
+Mob.prototype.saveStats = ['hp','str','agi','int','cha','hp','skills','facing','faction','capturePoints','bindingPoints'];
 Mob.prototype.name = "mob";
+Mob.prototype.mobType = 'mob'; 
 Mob.prototype.knownMobs = {}; //mob, time
 Mob.prototype.mobMemoryTurns = 3;
 Mob.prototype.mobMemoryTime = 5000;
 Mob.prototype.fieldOfView = (19 * Math.PI) / 30 * 0.9;
 Mob.prototype.visionRange = 8;
-Mob.prototype.facing = 1; //like a dial pad
 Mob.prototype.movesPerTurn = 5;
 Mob.prototype.remainingMoves = 5;
 Mob.prototype.attackedThisTurn = false;
@@ -220,18 +225,11 @@ Mob.prototype.getEquipment = function () //returns a list of valid abilities bas
 Mob.prototype.save = function ()
 {
 	//record current hp, x,y facing,all stats and skills, status effects
-	var output =
+	var output = {};
+	for (var c1=0,len=this.saveStats.length;c1<len;c1++)
 	{
-		'hp' : this.hitPoints,
-		'x' : this.x,
-		'y' : this.y,
-		'facing' : this.facing,
-		'str' : this.str,
-		'agi' : this.agi,
-		'int' : this.int,
-		'cha' : this.cha,
-		'skills' : this.skills,
-		
-	};
+		var sta = saveStats[c1];
+		output[sta] = this[sta];
+	}
 	return output;
 };

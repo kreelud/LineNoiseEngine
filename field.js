@@ -444,6 +444,90 @@ function Field ()
 		return this.tileset.drawField(this);
 	};
 }
+Field.prototype.loadMob = function (data,spot=null)
+{
+	var newMob = new MobLib[data.mobtype]();
+	if (!data.x||!data.y)
+	{
+		var tile = this.getEmptyTile();
+		newMob.x = tile[0];
+		newMob.y = tile[1];
+	}
+	else
+	{
+		newMob.x = data.x;
+		newMob.y = data.y
+	}
+	var stats = newMob.saveStats;
+	for (var c1=0,len=stats.length;c1<len;c1++)
+	{
+		var thisStat = stats[c1];
+		if (data[thisStat])newMob[thisStat]=data[thisStat];
+	}
+	this.addMob(newMob);
+};
+Field.prototype.getEmptyTile = function ()
+{
+	var area = this.grid.length * this.grid[0].length;
+	var start = Math.floor(Math.random()*area);
+	var width = this.grid.length;
+	for (var c1=0;c1<area;c1++)
+	{
+		var offset = (start+c1) % area;
+		var x = offset % width;
+		var y = Math.floor(offset/width);
+		if (this.grid[x][y]==0&&!this.mobAt(x,y))
+		{
+			return [x,y];
+		}
+	}
+};
+Field.prototype.positionMobs = function (entryPoint,enemies)
+{
+	//-----
+	//position party members
+	//-----
+	
+	//find active
+	var partyMembers = Object.keys(characterSheet.party);
+	var activeParty = [];
+	for (var c1=0,len=partyMembers.length;c1< len; c1++)
+	{
+		var thisMember = characterSheet.party[partyMembers[c1]];
+		if (thisMember.active)
+		{
+			activeParty.push(thisMember);
+		}
+	}
+	//find empty space
+	var whiteSpace = [];
+	for (var c1=Math.max(0,entryPoint[0]-10),len1=Math.min(this.grid.length,entryPoint[0]+10);c1<len1;c1++)
+	{
+		for (var c2=Math.max(0,entryPoint[1]-10),len2=Math.min(this.grid[0].length,entryPoint[1]+10);c2<len2;c2++)
+		{
+			if (this.grid[c1][c2]==0 || this.grid[c1][c2]==4)whiteSpace.push([c1,c2]);
+		}
+	}
+	whiteSpace.sort(function (a,b)
+	{
+		return Math.sqrt(Math.pow(a[0],2) + Math.pow(a[1],2)) - Math.sqrt(Math.pow(b[0],2) + Math.pow(b[1],2));
+	});
+	for (var c1=0,len=activeParty.length;c1<len;c1++)
+	{
+		var space = whiteSpace.pop();
+		activeParty[c1].x = space[0];
+		activeParty[c1].y = space[1];
+		this.loadMob(activeParty[c1]);
+	}
+	//-----
+	//position enemies
+	//-----
+	whiteSpace = [];
+	for (var c1=0,len=enemies.length;c1<len;c1++)
+	{
+		this.loadMob(enemies[c1]);
+	}
+};
 //receive move- callback function passed from mobs
 
 //begin turn- prompts all mobs to move

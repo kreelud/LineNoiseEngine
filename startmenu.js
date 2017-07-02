@@ -220,11 +220,13 @@ StartMenu.prototype.newgame = function ()
 		return;
 	}
 	//save them to character sheet
-	characterSheet = new CharacterSheet();
-	characterSheet.characterInfo =
-	characterInfo =
+	characterSheet.party = {};
+	characterSheet.party.main =
 	{
-		'name' : choice.name,
+		'name' : choices.name,
+		'active' : true,
+		'mobtype' : 'protagonist',
+		'faction' : 'player',
 		'backgrounds' : choices.backgrounds,
 		'level' : 1,
 		'str' : 5,
@@ -235,4 +237,5 @@ StartMenu.prototype.newgame = function ()
 		'inventory': []
 	};
 	//load the map
+	characterSheet.loadMap(MapLib.warehouse,[3,46],[]);
 }

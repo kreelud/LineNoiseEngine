@@ -27,8 +27,9 @@
 		<script src='mobs/sentinel.js'></script>
 		<script src='mobsprites/protest.js'></script>
 		<script src='mobsprites/sentinel.js'></script>
+		<script src='characterSheet.js'></script>
 		<script src='assets/test.json'></script>
-		<script src='assets/test.json'></script>
+		<script src='assets/warehouse.json'></script>
 		<script>
 			var imageCache = {};  //external assets
 			var spriteStack = {};//list of all active sprites, each containing x,y, function,onclick
@@ -145,9 +146,11 @@
 				setInterval(pulse,250);
 
 				document.addEventListener('keydown',keydown);
+				console.log(MobSpritePreloadStack[0]);
 				new ImageLoader (MobSpritePreloadStack,test);
 				
 				//temp control
+				/*
 				var buttons = ['end turn'];
 				var buttonFunctions = ['endturn'];
 				var panel = document.createElement('div');
@@ -164,11 +167,11 @@
 					thisHold.appendChild(thisButton);
 					panel.appendChild(thisHold);
 				}
-				document.getElementById('gameContainer').appendChild(panel);
+				document.getElementById('gameContainer').appendChild(panel);*/
 				//buttons, feedback, and scale
 				
 			}
-			var map = new PlayfieldGraphic(mapdata);
+			//var map = new PlayfieldGraphic(mapdata);
 			
 			function keydown (evt)
 			{
@@ -200,7 +203,7 @@
 			{
 				var textTest = new TalkInterface();
 				textTest.load('sample');
-				
+				/*
 				var newmob = new TestMob(1, 1, "player");
 				newmob.name = 'protag';
 				newmob.img = MobSprites.Protest.bind(newmob);
@@ -214,15 +217,14 @@
 
 				map.field.addMob(sentinel);
 				map.field.modeCombat(newmob);
-				console.log(map.field.tileVisible(sentinel,5,4,true));
 				
-				spriteStack['map']={'html':map.html,'refresh':map.refresh.bind(map)};
-				var doc = document.getElementById('gameContainer');
+				spriteStack['map']={'html':map.html,'refresh':map.refresh.bind(map)};*/
+				characterSheet = new CharacterSheet(document.getElementById('gameContainer'));
 				//doc.appendChild(map.html);
 				
-				var start = new StartMenu();
-				doc.appendChild(start.html);
-				console.log(start.html);
+				//var start = new StartMenu();
+				//doc.appendChild(start.html);
+				//console.log(start.html);
 				
 				//var testModal = new Modal ();
 				//map.html.appendChild(testModal.html);

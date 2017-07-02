@@ -1,4 +1,6 @@
-function PlayfieldGraphic (map)
+window.MapLib = {};
+
+function PlayfieldGraphic (map,entry=null,enemies = null)
 {
 	this.mapName = 'default';
 	this.html = document.createElement('div');
@@ -118,6 +120,8 @@ function PlayfieldGraphic (map)
 	
 	this.field = new Field({});  //needed to draw mobs in correct place
 	this.field.mobAniCallback = function (){this.refreshUI;}.bind(this);
+	this.entry = entry;
+	this.enemies = enemies;
 	this.camera = {'x':0,'y':0}; //in canvas coordinates
 	this.loaded = false;
 	this.firstGids = {};
@@ -236,7 +240,6 @@ function PlayfieldGraphic (map)
 		else this.cameraPanX = Math.min(-this.cameraPanSpeedMax * (0.10-mX),0);
 		if (mY>0.9)this.cameraPanY = Math.max(this.cameraPanSpeedMax * (mY-0.90),0);
 		else this.cameraPanY = Math.min(-this.cameraPanSpeedMax * (0.10-mY),0);
-		
 		
 		var currentTile = this.canvasXYToTile (evt.clientX-rect.left,evt.clientY-rect.top);
 		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)]
@@ -374,6 +377,7 @@ function PlayfieldGraphic (map)
 	};
 	this.graphicStart = function ()
 	{
+		console.log("sfds");
 		//go through layer by layer, drawing on belowmobs and abovemobs
 		var currentCanvas = this.belowMobs; //when we reach the moblayer, this is set to true
 		for (var c1=0;c1<this.map.layers.length;c1++)
@@ -419,7 +423,12 @@ function PlayfieldGraphic (map)
 			}
 		}
 		this.loaded = true;
+		this.field.positionMobs(this.entry,this.enemies);
+		console.log("loaded");
+		this.pulseTimer = setInterval(this.refresh.bind(this),250);
 	};
+	
+	
 	//load the graphics
 	var stack = [];
 	for (var c1=0;c1<this.map.tilesets.length;c1++)
@@ -429,68 +438,75 @@ function PlayfieldGraphic (map)
 		this.firstGids[ts.firstgid] = ts; //record this to make tile access easier
 	}
 	new ImageLoader (stack,this.graphicStart.bind(this));
-	this.refresh = function ()
-	{
-		//camera pan
-		var timePassed = Date.now()- this.cameraLastPanUpdate
-		this.cameraLastPanUpdate += timePassed;
-		this.camera.x += timePassed * this.cameraPanX;
-		this.camera.y += timePassed * this.cameraPanY;
-		
-		
-		if (this.field.mode=='combat'&&this.lastCenteredChar != this.field.lastMover) //if camera move, and the last char centered on wasn't this one, center character
-		{
-			//TODO: add check to make sure mob is known
-			this.camera.x = this.field.lastMover.x * this.tileWidth - (parseInt(this.html.style.width)/2);
-			this.camera.y = this.field.lastMover.y * this.tileHeight - (parseInt(this.html.style.height)/2);
-			this.lastCenteredChar = this.field.lastMover;
-		}
-		this.camera.x = Math.max(Math.min(this.camera.x,this.belowMobs.width - parseInt(this.html.style.width)),0);
-		this.camera.y = Math.max(Math.min(this.camera.y,this.belowMobs.height - parseInt(this.html.style.height)),0);
-		this.stage.style.left = -this.camera.x;
-		this.stage.style.top = -this.camera.y;
-		//active character panel (temporary until update)
-		if (this.field.activePlayerCharacter != null)
-		{
-			this.bLeftPanel.style.visibility = 'visible';
-			this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
-			this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
-		}
-		else
-		{
-			this.bLeftPanel.style.visibility = 'hidden';
-		}
-		//mobs
-		var mobs = this.field.getMobs();
-		for (var c1=0;c1<mobs.length;c1++)
-		{
-			if (!this.mobGraphics[mobs[c1].mobId])this.mobGraphics[mobs[c1].mobId] = {};
-			var mobCache = this.mobGraphics[mobs[c1].mobId];
-			//TODO: fog of war
-			if (!mobCache)this.mobGraphics[mobs[c1].mobId] = {};
-			mobs[c1].img(mobCache);
-			
-			if (mobs[c1].faction=='player')
-			{
-				/*this.camera.x = mobs[c1].x * this.tileWidth - (parseInt(this.html.style.width)/2);
-				this.camera.y = mobs[c1].y * this.tileHeight - (parseInt(this.html.style.height)/2);
-				this.stage.style.left = -this.camera.x;
-				this.stage.style.top = -this.camera.y;*/
-			}
-			
-			var cacheContents = Object.keys(mobCache);
-			for (var c2=0,len2=cacheContents.length;c2<len2;c2++)
-			{
-				var cont = mobCache[cacheContents[c2]];
-				if (!cont.appended)
-				{
-					this.stage.appendChild(cont);
-					cont.appended = true;
-				}
-				cont.style.left = cont.xPos * this.tileWidth + cont.xOffset; //- this.camera['x'];
-				cont.style.top = cont.yPos * this.tileHeight + cont.yOffset; //- this.camera['y'];//+(this.map.tileheight/2 * config.scale)
-			}
-		}
-		
-	};
+	
+	
 }
+PlayfieldGraphic.prototype.refresh = function ()
+{
+	//camera pan
+	var timePassed = Date.now()- this.cameraLastPanUpdate
+	this.cameraLastPanUpdate += timePassed;
+	this.camera.x += timePassed * this.cameraPanX;
+	this.camera.y += timePassed * this.cameraPanY;
+		
+		
+		
+	if (this.field.mode=='combat'&&this.lastCenteredChar != this.field.lastMover) //if camera move, and the last char centered on wasn't this one, center character
+	{
+		//TODO: add check to make sure mob is known
+		this.camera.x = this.field.lastMover.x * this.tileWidth - (parseInt(this.html.style.width)/2);
+		this.camera.y = this.field.lastMover.y * this.tileHeight - (parseInt(this.html.style.height)/2);
+		this.lastCenteredChar = this.field.lastMover;
+	}
+	this.camera.x = Math.max(Math.min(this.camera.x,this.belowMobs.width - parseInt(this.html.style.width)),0);
+	this.camera.y = Math.max(Math.min(this.camera.y,this.belowMobs.height - parseInt(this.html.style.height)),0);
+	this.stage.style.left = -this.camera.x;
+	this.stage.style.top = -this.camera.y;
+	//active character panel (temporary until update)
+	if (this.field.activePlayerCharacter != null)
+	{
+		this.bLeftPanel.style.visibility = 'visible';
+		this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
+		this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
+	}
+	else
+	{
+		this.bLeftPanel.style.visibility = 'hidden';
+	}
+	//mobs
+	var mobs = this.field.getMobs();
+	for (var c1=0;c1<mobs.length;c1++)
+	{
+		if (!this.mobGraphics[mobs[c1].mobId])this.mobGraphics[mobs[c1].mobId] = {};
+		var mobCache = this.mobGraphics[mobs[c1].mobId];
+		//TODO: fog of war
+		if (!mobCache)this.mobGraphics[mobs[c1].mobId] = {};
+		mobs[c1].img(mobCache);
+			
+		if (mobs[c1].faction=='player')
+		{
+			/*this.camera.x = mobs[c1].x * this.tileWidth - (parseInt(this.html.style.width)/2);
+			this.camera.y = mobs[c1].y * this.tileHeight - (parseInt(this.html.style.height)/2);
+			this.stage.style.left = -this.camera.x;
+			this.stage.style.top = -this.camera.y;*/
+		}
+			
+		var cacheContents = Object.keys(mobCache);
+		for (var c2=0,len2=cacheContents.length;c2<len2;c2++)
+		{
+			var cont = mobCache[cacheContents[c2]];
+			if (!cont.appended)
+			{
+				this.stage.appendChild(cont);
+				cont.appended = true;
+			}
+			cont.style.left = cont.xPos * this.tileWidth + cont.xOffset; //- this.camera['x'];
+			cont.style.top = cont.yPos * this.tileHeight + cont.yOffset; //- this.camera['y'];//+(this.map.tileheight/2 * config.scale)
+		}
+	}
+};
+PlayfieldGraphic.prototype.createControl = function ()
+{
+	//action, skills, center, skip, end turn.  Move counter, console, game button
+};
+
