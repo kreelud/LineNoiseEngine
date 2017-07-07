@@ -144,6 +144,10 @@
 			function begin ()
 			{
 				setInterval(pulse,250);
+				
+				var gc = this.document.getElementById('gameContainer');
+				gc.style.width = config.screenWidth;
+				gc.style.height = config.screenHeight;
 
 				document.addEventListener('keydown',keydown);
 				console.log(MobSpritePreloadStack[0]);
@@ -231,9 +235,43 @@
 				//doc.appendChild(textTest.html);
 			}//each sprite an html object?  Yes  zoom:0.5;-moz-transform:scale(0.5);position:absolute;left:0
 		</script>
+		<style>
+		.bleep_button
+		{
+			border: 2px solid lime;
+			border-radius: 3px;
+			background-color: black;
+			color: lime;
+		}
+		.bleep_button:hover
+		{
+			color: black;
+			background-color: lime;
+		}
+		.bleep_button_selected
+		{
+			
+		}
+		.bleep_button_disabled
+		{
+			
+		}
+		input[type=text]
+		{
+			border: 2px solid lime;
+			border-radius: 3px;
+			background-color: black;
+			color : lime;
+		}
+		body
+		{
+			background-color: black;
+			color : lime;
+		}
+		</style>
 	</head>
 	<body onload='begin();'>
-		<div id='gameContainer' width=640 height=480 style='overflow:hidden'>
+		<div id='gameContainer' style='overflow:hidden;position:relative;margin-left:auto;margin-right:auto;border:5px solid lime'>
 		</div>
 	</body>
 </html>

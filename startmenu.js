@@ -2,16 +2,17 @@ function StartMenu ()
 {
 	
 	this.html = document.createElement('div');
+	this.html.id = 'startmenu';
 	this.html.style.position = 'absolute';
 	this.html.style.backgroundColor = 'rgba(0,0,0,0.5)';
 	this.html.style.width = '100%';
 	this.html.style.height = '100%';
 	
 	this.contentWindow = document.createElement('div');
-	this.contentWindow.style.backgroundColor = 'white';
-	this.contentWindow.style.width = '75%';
-	this.contentWindow.style.height = '100%';
+	this.contentWindow.style.backgroundColor = 'black';
 	this.contentWindow.style.margin = '0% auto';
+	this.contentWindow.style.width = '100%';
+	this.contentWindow.style.height = '100%';
 	this.contentWindow.style.overflowY = 'scroll';
 	this.contentWindow.onclick = function (evt){evt.stopPropagation();};
 	this.html.appendChild(this.contentWindow);
@@ -238,4 +239,5 @@ StartMenu.prototype.newgame = function ()
 	};
 	//load the map
 	characterSheet.loadMap(MapLib.warehouse,[3,46],[]);
+	this.html.style.display = 'none';
 }
