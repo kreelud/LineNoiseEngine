@@ -24,6 +24,18 @@ function CharacterSheet (gameArea)
 		}
 	};
 }
+CharacterSheet.prototype.consoleOutput = "";
+CharacterSheet.prototype.consoleDiv = null;
+CharacterSheet.prototype.cout = function (message)
+{
+	this.consoleOutput += message + '\n';
+	if (!this.consoleDiv)return;
+	var bottomScroll = true;
+	//if (this.consoleDiv.scrollTop != this.consoleDiv.scrollHeight)bottomScroll = false;
+	this.consoleDiv.innerHTML = this.consoleOutput;
+	this.consoleDiv.scroller.scrollTop = this.consoleDiv.scroller.scrollHeight;
+}
+
 CharacterSheet.prototype.currentMap = null;
 
 CharacterSheet.prototype.unloadMap = function ()

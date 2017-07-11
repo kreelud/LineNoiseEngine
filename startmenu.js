@@ -13,7 +13,7 @@ function StartMenu ()
 	this.contentWindow.style.margin = '0% auto';
 	this.contentWindow.style.width = '100%';
 	this.contentWindow.style.height = '100%';
-	this.contentWindow.style.overflowY = 'scroll';
+	this.contentWindow.style.overflowY = 'auto';
 	this.contentWindow.onclick = function (evt){evt.stopPropagation();};
 	this.html.appendChild(this.contentWindow);
 	
@@ -31,11 +31,15 @@ function StartMenu ()
 	this.screens.stage0.innerHTML = "<h1>Line Noise</h1>";
 	//stage 1
 	var stage0Buttons = ['new game','load game','credits'];
+	
 	this.buttons = [];
 	for (var c1=0,len=stage0Buttons.length;c1<len;c1++)
 	{
 		var name = stage0Buttons[c1];
 		this.buttons[name] = document.createElement('button');
+		this.buttons[name].className = 'bleep_button';
+		this.buttons[name].style.fontSize = '36px';
+		this.buttons[name].style.marginBottom = '6px';
 		this.buttons[name].innerHTML = name;
 		var container = document.createElement('div');
 		container.appendChild(this.buttons[name]);
@@ -58,7 +62,8 @@ function StartMenu ()
 	var nameBox = document.createElement('div');
 	var genderRadioBox = document.createElement('div');
 	var gameModeRadioBox = document.createElement('div');
-	var backgroundCheckBox = document.createElement('div');
+	var backgroundRadioBox = document.createElement('div');
+	this.backgroundDescBox = document.createElement('div');
 	var continueButtonBox = document.createElement('div');
 	var continueButton = document.createElement('button');
 	continueButton.innerHTML = 'continue';
@@ -79,8 +84,9 @@ function StartMenu ()
 	this.screens['newgame_basic'].appendChild(document.createElement('br'));
 	label = document.createElement('div')
 	this.screens['newgame_basic'].appendChild(label);
-	label.innerHTML = 'Background:';
-	this.screens['newgame_basic'].appendChild(backgroundCheckBox);
+	label.innerHTML = 'Background (choose 2):';
+	this.screens['newgame_basic'].appendChild(backgroundRadioBox);
+	this.screens['newgame_basic'].appendChild(this.backgroundDescBox);
 	this.screens['newgame_basic'].appendChild(document.createElement('br'));
 	this.screens['newgame_basic'].appendChild(continueButtonBox);
 	this.screens.newgame_basic.radios = [];
@@ -89,83 +95,44 @@ function StartMenu ()
 	this.screens['newgame_basic'].nameEnter.type = 'text';//this.screens['newgame_basic'].nameEnter.setAttribute("type", "text");
 	nameBox.appendChild(this.screens['newgame_basic'].nameEnter);
 	
-	var gameModes = ['Both','GID','DID'];
-	for (var c1=0,len=gameModes.length;c1<len;c1++)
+	var modeButtonSet = new ButtonSet([{'tex':'Both','val':'both'},{'tex':"DID",'val':'did'},{'tex':'GID','val':'gid'}],{'maxRadio':1});
+	this.modeButtonSet = modeButtonSet;
+	for (var c1=0,len=modeButtonSet.buttons.length;c1<len;c1++)
 	{
-		var mode = gameModes[c1];
-		gameModeRadioBox.innerHTML += mode;
-		var newRadio = document.createElement('input');
-		newRadio.type = 'radio';
-		newRadio.name = 'game_mode';
-		newRadio.value = mode;
-		gameModeRadioBox.appendChild(newRadio);
-		this.screens.newgame_basic.radios.push(newRadio);
+		gameModeRadioBox.appendChild(modeButtonSet.buttons[c1]);
 	}
 	
 	var sex = ['Male','Female'];
-	for (var c1=0,len=sex.length;c1<len;c1++)
+	var sexButtonSet = new ButtonSet([{'tex':'Male','val':'male'},{'tex':"Female",'val':'female'}],{'maxRadio':1});
+	this.sexButtonSet = sexButtonSet;
+	for (var c1=0,len=sexButtonSet.buttons.length;c1<len;c1++)
 	{
-		genderRadioBox.innerHTML += sex[c1];
-		var newRadio = document.createElement('input');
-		newRadio.type = 'radio';
-		newRadio.name = 'sex';
-		newRadio.value = sex[c1];
-		genderRadioBox.appendChild(newRadio);
-		this.screens.newgame_basic.radios.push(newRadio);
+		genderRadioBox.appendChild(sexButtonSet.buttons[c1]);
 	}
 	
 	var bckgrnds = Object.keys(TextBank.words.backgrounds);
-	backgroundCheckBox.style.height = '60%';
-	backgroundCheckBox.style.overflow = 'auto';
-	var backgroundTable = document.createElement('table');
-	backgroundTable.style.borderCollapse = 'collapse';
-	backgroundCheckBox.appendChild(backgroundTable);
-	console.log(bckgrnds);
+	var bgButtonsOrder = [];
 	for (var c1=0,len=bckgrnds.length;c1<len;c1++)
 	{
 		var bck = bckgrnds[c1];
-		var newRow = document.createElement('tr');
-		backgroundTable.appendChild(newRow);
-		var checkCell = document.createElement('td');
-		var nameCell = document.createElement('td');
-		var descCell = document.createElement('td');
-		newRow.appendChild(checkCell);
-		newRow.appendChild(nameCell);
-		newRow.appendChild(descCell);
-		checkCell.style.border = '1px solid black';
-		nameCell.style.border = '1px solid black';
-		descCell.style.border = '1px solid black';
-		
-		nameCell.innerHTML = TextBank.words.backgrounds[bck];
-		descCell.innerHTML = TextBank.words.backgrounds_desc[bck];
-		
-		var check = document.createElement('input');
-		check.type = 'checkbox';
-		check.name = 'background_check';
-		check.value = bck;
-		check.onchange =function (evt)
-		{
-			var checks = document.getElementsByName('background_check');
-			var checkedCount = 0;
-			
-			for (var c1=0,len=checks.length;c1<len;c1++)
-			{
-				checks[c1].disabled = false;
-				if (checks[c1].checked)checkedCount++;
-				if (checkedCount>=2)
-				{
-					for (var c2=0,len2=checks.length;c2<len2;c2++)
-					{
-						if (!checks[c2].checked)checks[c2].disabled = true;
-					}
-					break;
-				}
-			}
-		};
-		checkCell.append(check);
+		bgButtonsOrder.push({'tex':TextBank.words.backgrounds[bck],'val':bck});
 	}
-	//continueButton.style.position = 'absolute';
-	continueButton.style.float = 'right';
+	var bgButtonSet = new ButtonSet(bgButtonsOrder,{'maxRadio':2});
+	this.bgButtonSet = bgButtonSet;
+	for (var c1=0,len=bgButtonSet.buttons.length;c1<len;c1++)
+	{
+		var button = bgButtonSet.buttons[c1];
+		button.onmouseover = function (evt)
+		{
+			this.backgroundDescBox.innerHTML = TextBank.words.backgrounds_desc[evt.target.value]
+		}.bind(this);
+		backgroundRadioBox.appendChild(button);
+	}
+	continueButton.style.position = 'absolute';
+	continueButton.style.top = '10%';
+	continueButton.style.right = '10%';
+	continueButton.style.fontSize = '24';
+	continueButton.className = 'bleep_button';
 	continueButtonBox.appendChild(continueButton);
 	continueButton.onclick = function ()
 	{
@@ -178,35 +145,23 @@ StartMenu.prototype.newgame = function ()
 	//parse all the menus
 	var choices = {};
 	choices.name = this.screens['newgame_basic'].nameEnter.value;
-	var genderChecks = document.getElementsByName('sex');
-	for (var c1=0,len=genderChecks.length;c1<len;c1++)
+	var genderChoice = this.sexButtonSet.getPushed();
+	if (genderChoice.length!=1)
 	{
-		if (genderChecks[c1].checked)
-		{
-			choices.gender = genderChecks[c1].value;
-		}
-		break;
+		alert("Please select a gender!");
+		return;
 	}
-	var gameModeChecks = document.getElementsByName('game_mode');
-	for (var c1=0,len=gameModeChecks.length;c1<len;c1++)
+	else choices.gender = genderChoice[0];
+	var gameModeChoice = this.modeButtonSet.getPushed();;
+	if (gameModeChoice.length!=1)
 	{
-		if (gameModeChecks[c1].checked)
-		{
-			choices.game_mode = gameModeChecks[c1].value;
-		}
-		break;
+		alert("Please select a game mode!");
+		return;
 	}
-	var backgroundChecks = document.getElementsByName('background_check');
+	else choices.game_mode = genderChoice[0];
+	var backgroundChoices = document.getElementsByName('background_check');
 	var found1 = false;
-	choices.backgrounds = [];
-	for (var c1=0,len=backgroundChecks.length;c1<len;c1++)
-	{
-		if (backgroundChecks[c1].checked)
-		{
-			choices.backgrounds.push(backgroundChecks[c1].value);
-			if (choices.backgrounds.length>=2)break;
-		}
-	}
+	choices.backgrounds = this.bgButtonSet.getPushed();
 	//check them
 	if (!choices.name)
 	{
@@ -240,4 +195,5 @@ StartMenu.prototype.newgame = function ()
 	//load the map
 	characterSheet.loadMap(MapLib.warehouse,[3,46],[]);
 	this.html.style.display = 'none';
+	characterSheet.cout(TextBank.console_misc.intro);
 }

@@ -15,14 +15,14 @@ function Field ()
 	this.activeMob = 0; //only meaningful in combat
 	this.storyScript = [];
 	this.activePlayerCharacter = null;
-	this.lastMover = null;
+	this.centerCameraOn = null;
 	this.modAniCallback = function (){};
 	
 	this.getActiveId = function ()
 	{
 		if (this.mode == 'combat')
 		{
-			return this.lastMover.id;
+			return this.centerCameraOn.id;
 		}
 		else return this.activePlayerCharacter;
 	}
@@ -93,7 +93,7 @@ function Field ()
 			active[c1].refresh();
 		}
 		active[0].getMove();
-		this.lastMover = active[0];
+		this.centerCameraOn = active[0];
 		if (fact[this.activeFaction]=='player')this.activePlayerCharacter = this.factions['player'][0];
 		else this.activePlayerCharacter = null;
 	};
@@ -128,7 +128,7 @@ function Field ()
 			if (!mob.attackedThisTurn)
 			{
 				mob.getMove();
-				this.lastMover = mob;
+				this.centerCameraOn = mob;
 			}
 			else
 			{
@@ -141,7 +141,7 @@ function Field ()
 						//TODO: add flag for non-player active character
 						if(faction[c1].faction=='player')this.activePlayerCharacter=faction[c1];
 						faction[c1].getMove();
-						this.lastMover = faction[c1];
+						this.centerCameraOn = faction[c1];
 						idleFound = true;
 						break;
 					}
@@ -300,6 +300,7 @@ function Field ()
 			return; //prevent recursion
 		
 		this.activePlayerCharacter = this.factions['player'][0];
+		this.centerCameraOn = this.activePlayerCharacter;
 		this.mode='peaceful';
 		var mobs = this.getMobs();
 		for (var c1=0;c1<mobs.length;c1++)
@@ -332,7 +333,7 @@ function Field ()
 				active[c1].refresh();
 			}
 			active[0].getMove();
-			this.lastMover = active[0];
+			this.centerCameraOn = active[0];
 		}
 	};
 	this.modeStory = function (script)
@@ -360,7 +361,7 @@ function Field ()
 		{
 			for (var c1=0;c1<toSearch.length;c1++)
 			{
-				if (toSearch[c1].dist > thisRoom.dist)
+				if (toSearch[c1].dist >= thisRoom.dist)
 				{
 					//insert it
 					toSearch.splice(c1, 0, thisRoom);
@@ -378,13 +379,15 @@ function Field ()
 				var exit = [potentialExits[c1][0]+thisRoom.coords[0],potentialExits[c1][1]+thisRoom.coords[1]];
 				//if exit is impassible, continue
 				if (this.tileImpassable(exit[0],exit[1],mob))continue;
+				var nextRoomCost = 1;
+				if (potentialExits[c1][0]!=0&&potentialExits[c1][1]!=0)nextRoomCost = 3;
 				//if the room is already known
 				if (rooms[exit[0]] && rooms[exit[0]][exit[1]])
 				{
 					var nextRoom = rooms[exit[0]][exit[1]];
-					if (nextRoom.cost > thisRoom.cost+1)
+					if (nextRoom.cost > thisRoom.cost+nextRoomCost)
 					{
-						nextRoom.cost = thisRoom.cost+1;
+						nextRoom.cost = thisRoom.cost+nextRoomCost;
 						nextRoom.prev = thisRoom.coords;
 					}
 					else continue; //have already found a shorter path
@@ -395,7 +398,7 @@ function Field ()
 					if (!rooms[exit[0]])rooms[exit[0]] = [];
 					var newRoom =
 					{
-						'cost:' : thisRoom.cost+1,
+						'cost:' : thisRoom.cost+nextRoomCost,
 						'prev' :thisRoom.coords,
 						'coords' :[exit[0],exit[1]],
 						'dist' : Math.sqrt(Math.pow(end[0]-exit[0],2) + Math.pow(end[1]-exit[1],2))
@@ -466,6 +469,7 @@ Field.prototype.loadMob = function (data,spot=null)
 	}
 	this.addMob(newMob);
 };
+Field.prototype.centerCameraOn= null;
 Field.prototype.getEmptyTile = function ()
 {
 	var area = this.grid.length * this.grid[0].length;

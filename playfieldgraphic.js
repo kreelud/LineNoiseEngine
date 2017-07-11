@@ -462,32 +462,12 @@ PlayfieldGraphic.prototype.refresh = function ()
 	this.camera.x += timePassed * this.cameraPanX;
 	this.camera.y += timePassed * this.cameraPanY;
 		
-		
-		
-	if (this.field.mode=='combat'&&this.lastCenteredChar != this.field.lastMover) //if camera move, and the last char centered on wasn't this one, center character
-	{
-		//TODO: add check to make sure mob is known
-		this.camera.x = this.field.lastMover.x * this.tileWidth - (parseInt(this.window.style.width)/2);
-		this.camera.y = this.field.lastMover.y * this.tileHeight - (parseInt(this.window.style.height)/2);
-		this.lastCenteredChar = this.field.lastMover;
-	}
-	this.camera.x = Math.max(Math.min(this.camera.x,this.belowMobs.width - parseInt(this.window.style.width)),0);
-	this.camera.y = Math.max(Math.min(this.camera.y,this.belowMobs.height - parseInt(this.window.style.height)),0);
-	this.stage.style.left = -this.camera.x;
-	this.stage.style.top = -this.camera.y;
-	//active character panel (temporary until update)
-	if (this.field.activePlayerCharacter != null)
-	{
-		//this.bLeftPanel.style.visibility = 'visible';
-		//this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
-		//this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
-	}
-	else
-	{
-		//this.bLeftPanel.style.visibility = 'hidden';
-	}
+	var rect = this.window.getBoundingClientRect();
+	
+
 	//mobs
 	var mobs = this.field.getMobs();
+	var xy = null;
 	for (var c1=0;c1<mobs.length;c1++)
 	{
 		if (!this.mobGraphics[mobs[c1].mobId])this.mobGraphics[mobs[c1].mobId] = {};
@@ -517,6 +497,18 @@ PlayfieldGraphic.prototype.refresh = function ()
 			cont.style.top = cont.yPos * this.tileHeight + cont.yOffset; //- this.camera['y'];//+(this.map.tileheight/2 * config.scale)
 		}
 	}
+	
+	if (this.field.centerCameraOn && this.field.mode=='peaceful')
+	{
+		
+		this.camera.x = this.field.centerCameraOn.x * this.tileWidth - (parseInt(rect.width)/2);
+		this.camera.y = this.field.centerCameraOn.y * this.tileHeight - (parseInt(rect.height)/2);
+		this.field.centerCameraOn = null;
+	}
+	this.camera.x = Math.max(Math.min(this.camera.x,this.belowMobs.width - parseInt(rect.width)),0);
+	this.camera.y = Math.max(Math.min(this.camera.y,this.belowMobs.height - parseInt(rect.height)),0);
+	this.stage.style.left = -this.camera.x;
+	this.stage.style.top = -this.camera.y;
 };
 PlayfieldGraphic.prototype.createControl = function ()
 {
@@ -526,7 +518,7 @@ PlayfieldGraphic.prototype.createControl = function ()
 	
 	var output = document.createElement('div');
 	output.style.bottom = '0px';
-	output.style.height = this.window.style.height * 0.2;
+	output.style.height = '20%';
 	output.style.width = this.window.style.width;
 	output.style.position='relative';
 	output.id = 'pgcontrol';
@@ -537,19 +529,44 @@ PlayfieldGraphic.prototype.createControl = function ()
 	gameButtonBox.style.height = '100%';
 	gameButtonBox.style.border = '2px solid';
 	gameButtonBox.style.backgroundColor = 'grey';
+	gameButtonBox.style.overflow='hidden';
 	output.appendChild(gameButtonBox);
+	
+	var logo = document.createElement('img');
+	gameButtonBox.appendChild(logo);
+	logo.style.height = '100%';
+	logo.src = "assets/LineNoiseLogo2.png";
 	
 	var consoleBox = document.createElement('div');
 	consoleBox.style.float = 'left';
 	consoleBox.style.width = '40%';
+	consoleBox.style.height = '100%';
 	consoleBox.style.border = '2px solid';
 	output.appendChild(consoleBox);
+	var wrapper = document.createElement("div");
+	wrapper.style.position='relative';
+	wrapper.style.width = '100%';
+	consoleBox.style.overflowY='scroll';
+	consoleBox.appendChild(wrapper);
+	this.consoleOutput = document.createElement('div');
+	this.consoleOutput.scroller = consoleBox;
+	this.consoleOutput.style.fontSize = '14px';
+	this.consoleOutput.style.margin = '7px';
+	wrapper.appendChild(this.consoleOutput);
+	//this.consoleOutput.style.position = 'absolute';
+	//consoleBox.appendChild(this.consoleOutput);
+	characterSheet.consoleDiv = this.consoleOutput;
 	
 	var combatButtonBox = document.createElement('div'); //
 	combatButtonBox.style.float = 'left';
 	combatButtonBox.style.width = '40%';
+	combatButtonBox.style.height = '100%';
 	combatButtonBox.style.border = '2px solid';
+	combatButtonBox.style.textAlign = 'center';
+	combatButtonBox.innerHTML = "Peaceful";
+	combatButtonBox.style.fontSize = '48px';
 	output.appendChild(combatButtonBox);
+	
 	
 	
 	return output;
