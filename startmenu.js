@@ -10,7 +10,7 @@ function StartMenu ()
 	
 	this.contentWindow = document.createElement('div');
 	this.contentWindow.style.backgroundColor = 'black';
-	this.contentWindow.style.margin = '0% auto';
+	this.contentWindow.style.margin = '0% 5%';
 	this.contentWindow.style.width = '100%';
 	this.contentWindow.style.height = '100%';
 	this.contentWindow.style.overflowY = 'auto';

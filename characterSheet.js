@@ -51,7 +51,7 @@ CharacterSheet.prototype.loadMap = function (map,entry,enemies)
 	}
 	this.currentMap = new PlayfieldGraphic(map,entry,enemies);
 	this.gameArea.appendChild(this.currentMap.html);
-	this.currentMap.field.modePeaceful();
+	//this.currentMap.field.modePeaceful();
 	console.log(this.currentMap.field.factions);
 };
 CharacterSheet.prototype.saveGame = function ()

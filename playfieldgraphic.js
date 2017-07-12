@@ -437,6 +437,7 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 		}
 		this.loaded = true;
 		this.field.positionMobs(this.entry,this.enemies);
+		this.field.modePeaceful();
 		console.log("loaded");
 		this.pulseTimer = setInterval(this.refresh.bind(this),250);
 	};
