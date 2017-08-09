@@ -5,6 +5,9 @@ window.Attacks['untie'] = function (actor,target,field)
 	
 	var targetMob = field.mobAt(target);
 	targetMob.bindingPoints = Math.max(0,targetMov.bindingPoints-30);
+	
+	if (targetMob.bindingPoints <=0)characterSheet.cout(actor.name+" unties "+target.name);
+	else characterSheet.cout(actor.name+" loosens the bindings on "+target.name);
 	return true;
 }
 

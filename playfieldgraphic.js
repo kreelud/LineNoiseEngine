@@ -40,73 +40,6 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 		this.modals[modals[c1]].close();
 	}
 	
-	//placeholder buttons
-	/*
-	this.equipButton = document.createElement('button');
-	this.centerButton = document.createElement('button');
-	
-	var bLeftPanel = document.createElement('table');
-	this.bLeftPanel= bLeftPanel;
-	bLeftPanel.style.bottom = '0px';
-	bLeftPanel.style.position = 'absolute';
-	bLeftPanel.style.zIndex = 3501;
-	bLeftPanel.onmousemove = function (evt)
-	{
-		evt.stopPropagation();
-	}
-	this.html.appendChild(bLeftPanel);
-	
-	var row1 = document.createElement('tr');
-	row1.appendChild(this.activeCharacterName = document.createElement('td'));
-	row1.appendChild(this.activeCharacterMoves = document.createElement('td'));
-	bLeftPanel.appendChild(row1);
-	
-	this.activeCharacterName.style.color = 'lime';
-	this.activeCharacterMoves.style.color = 'lime';
-	
-	var row2 = document.createElement('tr');
-	var td = document.createElement('td');
-	td.appendChild(this.equipButton);
-	row2.appendChild(td);
-	
-	
-	td = document.createElement('td');
-	td.appendChild(this.centerButton);
-	row2.appendChild(td);
-	
-	bLeftPanel.appendChild(row2);
-	
-	
-	this.equipButton.innerHTML = 'equip';
-	this.centerButton.innerHTML = 'center';
-	
-	this.centerButton.onclick = function (evt) //button only appears in combat mode, so center either on active character, or last move
-	{
-		evt.stopPropagation();
-		this.lastCenteredChar = null;
-	}.bind(this);
-	
-	this.gameButton = document.createElement('button');
-	this.gameButton.innerHTML = 'game';
-	this.gameButton.style.position = 'absolute';
-	this.gameButton.style.right = '0px';
-	this.gameButton.style.bottom = '0px';
-	this.gameButton.style.zIndex = 3501;
-	this.html.appendChild(this.gameButton);
-	
-	this.gameButton.onclick = function (evt)
-	{
-		this.modals['game'].show();
-		evt.stopPropagation();
-	}.bind(this);
-	this.equipButton.onclick = function (evt)
-	{
-		this.modals['equip'].show();
-		evt.stopPropagation();
-	}.bind(this);
-	*/
-	//end placeholder buttons
-	
 	var mods = Object.keys(this.modals);
 	for (var c1=0,len=mods.len;c1<len;c1++)
 	{
@@ -131,6 +64,20 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 	
 	this.field = new Field({});  //needed to draw mobs in correct place
 	this.field.mobAniCallback = function (){this.refreshUI;}.bind(this);
+	this.field.changeModeCallback = function ()
+	{
+		console.log(this.field.mode);
+		if (this.field.mode =='combat')
+		{
+			this.combatMenu.style.display ='inline';
+			this.peacefulMenu.style.display = 'none';
+		}
+		else
+		{
+			this.combatMenu.style.display ='none';
+			this.peacefulMenu.style.display = 'inline';
+		}
+	}.bind(this);
 	this.entry = entry;
 	this.enemies = enemies;
 	this.camera = {'x':0,'y':0}; //in canvas coordinates
@@ -191,61 +138,55 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 	
 	this.showModal = function (key)
 	{
-		
+		//css pre-warp
 	};
 	
 	this.canvasXYToTile = function (canvasX,canvasY)
 	{
 		return [Math.floor((canvasX+this.camera.x)/this.tileWidth),Math.floor((canvasY+this.camera.y)/this.tileHeight)];
 	};
-	this.window.onclick = function (evt)
+	this.window.onmousedown = function (evt)
 	{
-		this.refreshUI();
+
 		var rect = this.window.getBoundingClientRect();
 		evt.canvasX = evt.clientX - this.camera.x;
 		evt.canvasY = evt.clientY - this.camera.y;
-		var currentTile = this.mouseTile;//this.canvasXYToTile (evt.canvasX,evt.canvasY);
+		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)];
+		
+		this.lastMouseDown = [evt.clientX,evt.clientY];
+		//var currentTile = this.mouseTile;//this.canvasXYToTile (evt.canvasX,evt.canvasY);
+		
+		//record canvasX and canvasY for movement
 		
 		
-		if (this.playerAbility == 'center')
-		{
-			//this.camera.x = Math.max(Math.min(evt.canvasX - this.html.width/2,this.map.tilewidth*this.map.width-this.html.width),0);
-			//this.camera.y = Math.max(Math.min(evt.canvasY - this.html.height/2,this.map.tileheight*this.map.height-this.html.height),0);
-			this.camera.x = this.camera.x +evt.clientX;
-			this.camera.y = this.camera.y + evt.clientY;
-			this.stage.style.left = -this.camera.x;
-			this.stage.style.top = -this.camera.y;
-			return;
-		}
+		this.mouseDown = true;
 		
-		if (this.field.activePlayerCharacter ==null)return; //not the player's turn
-		
-		//if it's combat and the player's turn, force mob move
-		if (this.field.mode=='combat')
-		{
-			this.field.activePlayerCharacter.forceMove(this.playerAbility,currentTile,'');
-		}
-		//if it's peaceful and there's a mob, talk to the mob
-		else if (this.field.mode=='peaceful' && this.field.mobAt(currentTile[0],currentTile[1]))
-		{
-			
-		}
-		//if it's peaceful and there's no mob, walk to that location
-		else if (this.field.mode=='peaceful')
-		{
-			this.field.activePlayerCharacter.forceMove('walk',currentTile,'');
-		}
 	}.bind(this);
 	this.mouseTile = null;  //the tile that the mouse is hovering over
+	this.window.onmouseup = function (evt)
+	{
+		this.mouseDown = false;
+		this.lastMouseDown  = null;
+	}.bind(this);
 	this.window.onmouseout = function (evt)
 	{
 		this.cameraPanX = 0;
 		this.cameraPanY = 0;
+		this.lastMouseDown = null;
 	}.bind(this);
 	this.window.onmousemove = function (evt)
 	{
 		var rect = this.window.getBoundingClientRect();
 		
+		if (this.lastMouseDown)
+		{
+			
+			this.camera.x -= evt.clientX - this.lastMouseDown[0];
+			this.camera.y -= evt.clientY - this.lastMouseDown[1];
+			this.lastMouseDown = [evt.clientX,evt.clientY]
+		}
+		
+		/*
 		//pan screen
 		var mX = (evt.clientX-rect.left) / rect.width;
 		var mY = (evt.clientY-rect.top) / rect.height;
@@ -263,31 +204,19 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 			this.arScannerOutput.innerHTML = '';
 			this.mouseTile = currentTile;
 			this.refreshUI();
-		}
+		}*/
 		
 	}.bind(this);
 	this.refreshUI = function ()
 	{
-		//active character panel
-		if (this.field.activePlayerCharacter != null)
-		{
-			//this.bLeftPanel.style.visibility = 'visible';
-			//this.activeCharacterName.innerHTML = this.field.activePlayerCharacter.name;
-			//this.activeCharacterMoves.innerHTML = this.field.activePlayerCharacter.remainingMoves+" / "+this.field.activePlayerCharacter.movesPerTurn;
-		}
-		else
-		{
-			//this.bLeftPanel.style.visibility = 'hidden';
-		}
-		
 		//player footpath
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
 		
-		if (this.mouseTile!=null)
+		if (this.activeTile!=null)
 		{
 			
-			var selectedMob = this.field.mobAt(this.mouseTile[0],this.mouseTile[1],false);
+			var selectedMob = this.field.mobAt(this.activeTile[0],this.activeTile[1],false);
 			if (selectedMob)
 			{
 				var textSubs = {};
@@ -321,11 +250,11 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 			if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
 			{
 				//change mob facing
-				this.field.activePlayerCharacter.faceTile(this.mouseTile[0],this.mouseTile[1]);
+				this.field.activePlayerCharacter.faceTile(this.activeTile[0],this.activeTile[1]);
 				if (this.playerAbility=='walk')
 				{
 					var achar = this.field.activePlayerCharacter;
-					var path = this.field.astar([achar.x,achar.y],this.mouseTile);
+					var path = this.field.astar([achar.x,achar.y],this.activeTile);
 					if (path)
 					{
 						path.unshift([achar.x,achar.y]);
@@ -553,22 +482,72 @@ PlayfieldGraphic.prototype.createControl = function ()
 	this.consoleOutput.scroller = consoleBox;
 	this.consoleOutput.style.fontSize = '14px';
 	this.consoleOutput.style.margin = '7px';
+	this.consoleOutput.style.whiteSpace='pre-wrap';
 	wrapper.appendChild(this.consoleOutput);
 	//this.consoleOutput.style.position = 'absolute';
 	//consoleBox.appendChild(this.consoleOutput);
 	characterSheet.consoleDiv = this.consoleOutput;
 	
 	var combatButtonBox = document.createElement('div'); //
+	
+	this.peacefulMenu = document.createElement('div');
 	combatButtonBox.style.float = 'left';
 	combatButtonBox.style.width = '40%';
 	combatButtonBox.style.height = '100%';
 	combatButtonBox.style.border = '2px solid';
-	combatButtonBox.style.textAlign = 'center';
-	combatButtonBox.innerHTML = "Peaceful";
-	combatButtonBox.style.fontSize = '48px';
+	this.peacefulMenu.style.textAlign = 'center';
+	this.peacefulMenu.innerHTML = "Peaceful";
+	this.peacefulMenu.style.fontSize = '48px';
+	this.peacefulMenu.onclick = function ()
+	{
+		this.field.modeCombat(this.activePlayerCharacter);
+	}.bind(this);
+	combatButtonBox.appendChild(this.peacefulMenu);
+	
+	this.combatMenu = document.createElement('div');
+	var actionButton = document.createElement('button');
+	actionButton.style.display = 'block';
+	actionButton.innerHTML = "equip";
+	actionButton.className = 'bleep_button';
+	actionButton.onclick = function ()
+	{
+		if (this.field.activePlayerCharacter)
+		{
+			this.modals['equip'].loadEquip(this.field.activePlayerCharacter);
+		}
+	}.bind(this);
+	var nextButton = document.createElement('button'); //swaps active character and recenters
+	nextButton.style.display = 'block';
+	nextButton.innerHTML = 'next';
+	nextButton.className = 'bleep_button';
+	nextButton.onclick = function ()
+	{
+		if (this.field.activePlayerCharacter)
+		{
+			this.field.activePlayerCharacter.forceMove('wait');
+		}
+	}.bind(this);
+	var endTurnButton = document.createElement('button');
+	endTurnButton.style.display = 'block';
+	endTurnButton.innerHTML = 'end turn';
+	endTurnButton.className = 'bleep_button';
+	endTurnButton.onclick = function ()
+	{
+		if (this.field.activePlayerCharacter)
+		{
+			this.field.activePlayerCharacter.forceMove('wait');
+		}
+	}.bind(this);
+	//var endCombatButton = document.createElement('button'); not needed- auto check after each turn
+	//var combatMenu
+	
+	this.combatMenu.appendChild(actionButton);
+	this.combatMenu.appendChild(nextButton);
+	this.combatMenu.appendChild(endTurnButton);
+	this.combatMenu.style.display = 'none';
+	combatButtonBox.appendChild(this.combatMenu);
+	
 	output.appendChild(combatButtonBox);
-	
-	
 	
 	return output;
 };

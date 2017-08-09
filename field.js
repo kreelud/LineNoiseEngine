@@ -17,6 +17,7 @@ function Field ()
 	this.activePlayerCharacter = null;
 	this.centerCameraOn = null;
 	this.modAniCallback = function (){};
+	this.changeModeCallback = function (){};
 	
 	this.getActiveId = function ()
 	{
@@ -298,10 +299,12 @@ function Field ()
 	{
 		if (this.mode=='peaceful')
 			return; //prevent recursion
+		if (this.mode=='combat')characterSheet.cout("No threat detected.  Standing down.");
 		
 		this.activePlayerCharacter = this.factions['player'][0];
 		this.centerCameraOn = this.activePlayerCharacter;
 		this.mode='peaceful';
+		this.changeModeCallback('peaceful');
 		var mobs = this.getMobs();
 		for (var c1=0;c1<mobs.length;c1++)
 		{
@@ -312,8 +315,9 @@ function Field ()
 	{
 		if (this.mode=='combat')
 			return; //prevent recursion
-		
+		characterSheet.cout("<span style='color:red'>Combat Interface Engaged</span>");
 		this.mode = 'combat';
+		this.changeModeCallback('combat');
 		this.clearMobPerception();
 		if (activeMob == null)this.cycleActiveFaction();
 		else

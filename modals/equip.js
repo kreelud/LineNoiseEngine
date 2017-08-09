@@ -26,4 +26,5 @@ EquipModal.prototype.loadEquip = function (mob)
 		
 		newRowNameHolder.innerHTML = thisEquip;
 	}
+	this.show();
 };

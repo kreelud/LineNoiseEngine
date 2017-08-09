@@ -1,6 +1,6 @@
 window.Attacks['wait'] = function (mob,target,field)
 {
 	mob.endTurn();
-	console.log(mob.name+" turn ended");
+	characterSheet.cout(mob.name+" turn complete.");
 	return true;
 }

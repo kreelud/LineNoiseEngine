@@ -1,3 +1,6 @@
+//fonts-arphic-ukai fonts-arphic-uming fonts-ipafont-gothic
+//fonts-ipafont-mincho fonts-unfonts-core
+
 window.Attacks['capture'] = function (actor,target,field)
 {
 	
@@ -33,13 +36,16 @@ window.Attacks['capture'] = function (actor,target,field)
 		if (target.bindingPoints > 0)
 		{
 			target.bindingPoints += 20;
+			characterSheet.cout(actor.name+" secures the bindings on "+target.name);
 		}
 		else if (target.capturePoints >= 12)
 		{
 			target.bindingPoints = 10;
 			target.currentMove = 'captured';
 			target.currentMoveTime = Date.now();
+			characterSheet.cout(actor.name+" ties up "+target.name);
 		}
+		else characterSheet.cout(actor.name+" grabs "+target.name+' and attempts to hold them for an ally to tie up.');
 	}
 	actor.endTurn();
 	return true;
