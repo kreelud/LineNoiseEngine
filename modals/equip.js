@@ -8,6 +8,7 @@ EquipModal.prototype = Object.create(Modal.prototype);
 EquipModal.prototype.loadEquip = function (mob)
 {
 	var skillTable = document.createElement("table");
+	this.contentWindow.appendChild(skillTable);
 	var equip = ['wait','end_turn'];
 	equip = equip.concat(mob.getEquipment());
 	for (var c1=0,len=equip.length;c1<len;c1++)
@@ -15,16 +16,17 @@ EquipModal.prototype.loadEquip = function (mob)
 		var thisEquip = equip[c1];
 
 		var newRow = document.createElement('tr');
-		var newRowImageHolder = document.createElement('th');
+		var newRowDescHolder = document.createElement('th');
 		var newRowNameHolder = document.createElement('th');
-		var icon = document.createElement('img');
+		var button = document.createElement('button');
+		button.innerHTML = TextBank.abilities[thisEquip];
 		
 		skillTable.appendChild(newRow);
-		newRow.appendChild(newRowImageHolder);
+		newRow.appendChild(newRowDescHolder);
 		newRow.appendChild(newRowNameHolder);
-		newRowImageHolder.appendChild(icon);
 		
-		newRowNameHolder.innerHTML = thisEquip;
+		newRowNameHolder.appendChild(button);
+		newRowDescHolder.innerHTML = TextBank.abilities[thisEquip+"_desc"];
 	}
 	this.show();
 };

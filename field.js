@@ -64,6 +64,8 @@ function Field ()
 	}
 	this.tileOpaque = function (x,y) //visual
 	{
+		
+		//console.log("caller is " + arguments.callee.caller.toString());
 		return x<0||x>=this.grid.length ||
 			   y<0||y>=this.grid[0].length ||
 			   this.grid[x][y] == 2;
@@ -241,6 +243,7 @@ function Field ()
 		for (var c1=0,len=mobs.length;c1<len;c1++)
 		{
 			var mob = mobs[c1];
+			console.log(mob.x);
 			if (this.tileVisible(character, mob.x, mob.y))
 				output.push(mob);
 		}
@@ -353,7 +356,6 @@ function Field ()
 	};
 	this.astar = function (start,end,mob) //returns an array representing a path between start and end, or false on failure
 	{
-		
 		if (this.tileImpassable(end[0],end[1]))
 			return false;
 		
@@ -381,6 +383,7 @@ function Field ()
 			for (var c1=0;c1<potentialExits.length;c1++)
 			{
 				var exit = [potentialExits[c1][0]+thisRoom.coords[0],potentialExits[c1][1]+thisRoom.coords[1]];
+				
 				//if exit is impassible, continue
 				if (this.tileImpassable(exit[0],exit[1],mob))continue;
 				var nextRoomCost = 1;

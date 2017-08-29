@@ -154,17 +154,30 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)];
 		
 		this.lastMouseDown = [evt.clientX,evt.clientY];
+		
+		this.lastMouseTile = currentTile;
 		//var currentTile = this.mouseTile;//this.canvasXYToTile (evt.canvasX,evt.canvasY);
 		
 		//record canvasX and canvasY for movement
 		
 		
 		this.mouseDown = true;
-		
+		this.refreshUI();
 	}.bind(this);
 	this.mouseTile = null;  //the tile that the mouse is hovering over
 	this.window.onmouseup = function (evt)
 	{
+		var rect = this.window.getBoundingClientRect();
+		evt.canvasX = evt.clientX - this.camera.x;
+		evt.canvasY = evt.clientY - this.camera.y;
+		var currentTile = [Math.floor((evt.clientX-rect.left+this.camera.x)/this.tileWidth),Math.floor((evt.clientY-rect.top+this.camera.y)/this.tileHeight)];
+		
+		if (this.field.activePlayerCharacter)
+		{
+			this.useTile(currentTile);
+			this.refreshUI();
+		}
+
 		this.mouseDown = false;
 		this.lastMouseDown  = null;
 	}.bind(this);
@@ -213,75 +226,69 @@ function PlayfieldGraphic (map,entry=null,enemies = null)
 		var ctx = this.uiLayer.getContext('2d');
 		ctx.clearRect(0, 0, this.uiLayer.width, this.uiLayer.height);
 		
-		if (this.activeTile!=null)
+		if (this.field.activePlayerCharacter!=null)
 		{
-			
-			var selectedMob = this.field.mobAt(this.activeTile[0],this.activeTile[1],false);
-			if (selectedMob)
+			var pc = this.field.activePlayerCharacter;
+			if (pc.currentTarget)
 			{
-				var textSubs = {};
-				textSubs['$currentTargetName%']=selectedMob.name;
-				textSubs['$currentTargetDisposition%'] = 'friendly';
-				textSubs['$currentTargetAlerted%']= 'false';
-				textSubs['$currentTargetHp%']="<--->";
-				textSubs['$currentTargetStamina%']="<--->";
-				textSubs['$currentTargetStatusEffects%']="<--->";
-				textSubs['$currentTargetDescription%']="This is where rainbows all are dashed";
-				//this.arScannerOutput.innerHTML = (getText('ui_scanner',textSubs));
-				//TODO: Make sure it's known to the player
-				var light = document.createElement('canvas');
-				light.width = this.tileWidth;
-				light.height = this.tileHeight;
-				var lightCtx = light.getContext("2d");
-				lightCtx.fillStyle = "#FFFF0088";
-				lightCtx.fillRect(0, 0, light.width, light.height);
-				var tiles = this.field.getVisibleTiles(selectedMob);
-				
-				for (var c1=0,len=tiles.length;c1<len;c1++)
+				var selectedMob = this.field.mobAt(pc.currentTarget[0],pc.currentTarget[1],false)
+				if (selectedMob)
 				{
-					ctx.drawImage
-					(
-						light,
-						tiles[c1][0] * this.tileWidth,
-						tiles[c1][1]*this.tileHeight
-					);
+					var textSubs = {};
+					textSubs['$currentTargetName%']=selectedMob.name;
+					textSubs['$currentTargetDisposition%'] = 'friendly';
+					textSubs['$currentTargetAlerted%']= 'false';
+					textSubs['$currentTargetHp%']="<--->";
+					textSubs['$currentTargetStamina%']="<--->";
+					textSubs['$currentTargetStatusEffects%']="<--->";
+					textSubs['$currentTargetDescription%']="This is where rainbows all are dashed";
+					//this.arScannerOutput.innerHTML = (getText('ui_scanner',textSubs));
+					var light = document.createElement('canvas');
+					light.width = this.tileWidth;
+					light.height = this.tileHeight;
+					var lightCtx = light.getContext("2d");
+					lightCtx.fillStyle = "#FFFF0088";
+					lightCtx.fillRect(0, 0, light.width, light.height);
+					var tiles = this.field.getVisibleTiles(selectedMob);
+				
+					for (var c1=0,len=tiles.length;c1<len;c1++)
+					{
+						ctx.drawImage
+						(
+							light,
+							tiles[c1][0] * this.tileWidth,
+							tiles[c1][1]*this.tileHeight
+						);
+					}
 				}
 			}
-			if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
+			//if (this.field.activePlayerCharacter!=null && this.field.activePlayerCharacter.currentMove==''&&this.playerAbility=='walk')
+			if (pc.possiblePath ||pc.currentPath.length>0)
 			{
-				//change mob facing
-				this.field.activePlayerCharacter.faceTile(this.activeTile[0],this.activeTile[1]);
-				if (this.playerAbility=='walk')
+				var path;
+				if (pc.possiblePath)path = pc.possiblePath.slice(0);
+				else path = pc.currentPath.slice(0);
+				var achar = pc;
+				path.unshift([achar.x,achar.y]);
+				ctx.beginPath();
+				ctx.lineWidth = 5;
+				ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
+				ctx.strokeStyle='#00ff00';
+				var switched = false;
+				for (var c1=0;c1<path.length;c1++)
 				{
-					var achar = this.field.activePlayerCharacter;
-					var path = this.field.astar([achar.x,achar.y],this.activeTile);
-					if (path)
+					if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
 					{
-						path.unshift([achar.x,achar.y]);
-						ctx.beginPath();
-						ctx.lineWidth = 5;
-						ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
-						ctx.strokeStyle='#00ff00';
-						var switched = false;
-						for (var c1=0;c1<path.length;c1++)
-						{
-							if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
-							{
-								ctx.stroke();
-								ctx.beginPath();
-								ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
-								ctx.strokeStyle='#ff0000';
-								switched = true;
-							}
-							ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
-						}
 						ctx.stroke();
+						ctx.beginPath();
+						ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
+						ctx.strokeStyle='#ff0000';
+						switched = true;
 					}
-					else //no path found
-					{
-					
-					}
+					ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
 				}
+				ctx.stroke();
+				
 			}
 		}
 	};
@@ -500,7 +507,7 @@ PlayfieldGraphic.prototype.createControl = function ()
 	this.peacefulMenu.style.fontSize = '48px';
 	this.peacefulMenu.onclick = function ()
 	{
-		this.field.modeCombat(this.activePlayerCharacter);
+		this.field.modeCombat(this.field.activePlayerCharacter);
 	}.bind(this);
 	combatButtonBox.appendChild(this.peacefulMenu);
 	
@@ -550,5 +557,76 @@ PlayfieldGraphic.prototype.createControl = function ()
 	output.appendChild(combatButtonBox);
 	
 	return output;
+}
+//for player control
+PlayfieldGraphic.prototype.useTile = function(target)
+{
+	var pc = this.field.activePlayerCharacter;
+	if (!pc)return;
+	pc.faceTile(target[0],target[1]);
+	//if already has a target and the new one is different, abandon old target
+	if (pc.currentTarget&&(pc.currentTarget[0]!=target[0]||pc.currentTarget[1]!=target[1]))
+	{
+		pc.currentTarget = null;
+		pc.possiblePath = null;
+		return;
+	}
+	pc.currentTarget = target;
+	
+	//if tile is empty, set a course to it
+	var targetMob = this.field.mobAt(target[0],target[1],true);
+	if (!targetMob)
+	{
+		if (pc.possiblePath)
+		{
+			pc.forceMove('walk',target);
+		}
+		else pc.possiblePath = this.field.astar([pc.x, pc.y],target,pc);
+		console.log(pc.possiblePath);
+		return;
+	}
+	//if peaceful, talk to the tile
+	else if (this.field.mode == 'peaceful')
+	{
+		this.modals['dialogue'].showConvo(targetMob.talk);
+		this.modals['dialogue'].show();
+	}
+	//if in combat, use selectedAbility on the tile
+	else if (this.field.mode == 'combat')
+	{
+		pc.forceMove(pc.selectedAbility,target);
+	}
 };
-
+//change mob facing
+				//this.field.activePlayerCharacter.faceTile(this.activeTile[0],this.activeTile[1]);
+				//if (this.playerAbility=='walk')
+				/*{
+					var achar = this.field.activePlayerCharacter;
+					var path = this.field.astar([achar.x,achar.y],this.activeTile);
+					if (path)
+					{
+						path.unshift([achar.x,achar.y]);
+						ctx.beginPath();
+						ctx.lineWidth = 5;
+						ctx.moveTo(achar.x*this.tileWidth+(this.tileWidth/2),achar.y*this.tileHeight+(this.tileHeight/2));
+						ctx.strokeStyle='#00ff00';
+						var switched = false;
+						for (var c1=0;c1<path.length;c1++)
+						{
+							if (c1>achar.remainingMoves && !switched && this.field.mode=='combat')
+							{
+								ctx.stroke();
+								ctx.beginPath();
+								ctx.moveTo(path[c1-1][0]*this.tileWidth+(this.tileWidth/2),path[c1-1][1]*this.tileHeight+(this.tileHeight/2));
+								ctx.strokeStyle='#ff0000';
+								switched = true;
+							}
+							ctx.lineTo(path[c1][0]*this.tileWidth+(this.tileWidth/2),path[c1][1]*this.tileHeight+(this.tileHeight/2));
+						}
+						ctx.stroke();
+					}
+					else //no path found
+					{
+					
+					}
+				}*/

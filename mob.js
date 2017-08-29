@@ -39,6 +39,7 @@ Mob.prototype.lastHitTime = '';
 Mob.prototype.capturePoints = 0;
 Mob.prototype.bindingPoints = 0; //impossible to escape on their own once > 100
 Mob.prototype.hitPoints = 10;
+Mob.prototype.selectedAbility = 'walk';
 
 //progression
 Mob.prototype.level = 1;
@@ -123,7 +124,9 @@ Mob.prototype.endTurn = function ()
 };
 Mob.prototype.discardPath = function ()
 {
+	console.log('path discarded');
 	this.currentPath = [];
+	this.possiblePath = null;
 	this.plannedMove = "";
 	this.plannedMoveTarget = null;
 };
@@ -134,6 +137,7 @@ Mob.prototype.getMove = function()
 	if (this.currentPath.length > 0)
 	{
 		var targ = this.currentPath.shift();
+		
 		this.faceTile(targ[0],targ[1]);
 
 		if (window.Attacks['walk'](this,targ,this.field))
@@ -174,12 +178,14 @@ Mob.prototype.perceiveMob = function(otherMob)
 	return wantsCombat;
 };
 
+
 //used in story mode and for player control
 Mob.prototype.forceMove = function(move,target=[0,0],text='')
 {
 	if (move == 'walk')
 	{
-		var path = this.field.astar([this.x, this.y],target,this);
+		var path= this.field.astar([this.x, this.y],target,this); //reccomputing it is just easier
+		this.possiblePath = null;
 		if (!path)
 			return;  // exit if no path found
 		
@@ -191,7 +197,6 @@ Mob.prototype.forceMove = function(move,target=[0,0],text='')
 		this.performMove(move, target);
 	}
 };
-
 Mob.prototype.performMove = function (attack,target)
 {
 	if (window.Attacks[attack] && window.Attacks[attack](this, target, this.field))

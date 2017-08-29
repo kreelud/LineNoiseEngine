@@ -15,6 +15,7 @@ function DialogueModal ()
 DialogueModal.prototype = Object.create(Modal.prototype);
 DialogueModal.prototype.showConvo = function (convoK)
 {
+	if (!convoK)return;
 	var convo = TextBank.conversations[convoK].init;
 	this.npcBox.innerHTML = convo.convo;
 	this.playerBox.innerHTML = '';
